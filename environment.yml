@@ -1,0 +1,24 @@
+name: dmas
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - ca-certificates=2019.9.11=hecc5488_0
+  - certifi=2019.6.16=py37_1
+  - intel-openmp=2019.5=281
+  - libblas=3.8.0=12_mkl
+  - libcblas=3.8.0=12_mkl
+  - liblapack=3.8.0=12_mkl
+  - mkl=2019.4=245
+  - numpy=1.17.1=py37hc71023c_0
+  - openssl=1.1.1d=he774522_0
+  - pip=19.2.3=py37_0
+  - python=3.7.4=h5263a28_0
+  - setuptools=41.2.0=py37_0
+  - sqlite=3.29.0=hfa6e2cd_1
+  - tqdm=4.36.1=py_0
+  - vc=14.1=h0510ff6_4
+  - vs2015_runtime=14.16.27012=hf0eaf9b_0
+  - wheel=0.33.6=py37_0
+  - wincertstore=0.2=py37_1002
+
