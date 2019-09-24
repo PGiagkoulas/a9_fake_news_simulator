@@ -35,7 +35,7 @@ class MyPrompt(Cmd):
         n_news: 1 
         n_steps: 50 \n
         If you want to start the simulation with these values enter 'start'. 
-        Otherwise change values by entering 'set_{parameter} {value}' and then enter 'start'.
+        Otherwise change values by entering '{parameter} {value}' and then enter 'start'.
         Enter '?' for an overview over all commands.
         """
 
@@ -44,7 +44,7 @@ class MyPrompt(Cmd):
         print("Bye")
         return True
 
-    def do_set_n_agents(self, inp):
+    def do_n_agents(self, inp):
         '''Change the number of agents. Must be an integer larger than 0'''
         try:
             inp = int(inp)
@@ -57,7 +57,7 @@ class MyPrompt(Cmd):
             print("Wrong input type, please enter an integer larger than 0")
 
 
-    def do_set_n_liars(self, inp):
+    def do_n_liars(self, inp):
         '''Change the number of liars. Must be an integer larger than 0'''
         try:
             inp = int(inp)
@@ -69,7 +69,7 @@ class MyPrompt(Cmd):
         except:
             print("Wrong input type, please enter an integer larger than 0")
 
-    def do_set_n_experts(self, inp):
+    def do_n_experts(self, inp):
         '''Change the number of experts. Must be an integer larger than 0'''
         try:
             inp = int(inp)
@@ -81,7 +81,7 @@ class MyPrompt(Cmd):
         except:
             print("Wrong input type, please enter an integer larger than 0")
 
-    def do_set_n_connections(self, inp):
+    def do_n_connections(self, inp):
         '''Change the number of connections. Must be an integer larger than 0'''
         try:
             inp = int(inp)
@@ -93,7 +93,7 @@ class MyPrompt(Cmd):
         except:
             print("Wrong input type, please enter an integer larger than 0")
 
-    def do_set_n_news(self, inp):
+    def do_n_news(self, inp):
         '''Change the number of news. Must be an integer larger than 0'''
         try:
             inp = int(inp)
@@ -105,7 +105,7 @@ class MyPrompt(Cmd):
         except:
             print("Wrong input type, please enter an integer larger than 0")
 
-    def do_set_n_steps(self, inp):
+    def do_n_steps(self, inp):
         '''Change the number of steps. Must be an integer larger than 0'''
         try:
             inp = int(inp)
