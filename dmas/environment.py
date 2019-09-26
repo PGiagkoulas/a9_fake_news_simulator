@@ -37,7 +37,7 @@ class Environment:
         self.num_news = num_news
         self.num_steps = num_steps
         self.agent_list = self._generate_agents()
-        self.connectivity_matrix = self._initalize_connecticity_matrix()
+        self.connectivity_matrix = self._initialize_connectivity_matrix()
         self.communication_protocol = communication_protocol
         self.conversation_protocol = conversation_protocol
 
@@ -45,17 +45,23 @@ class Environment:
     def _generate_agents(self):
         list_of_agents = []
         for number in range(self.num_agents):
-            list_of_agents.append(agent.Agent(0, random.uniform(0.0, 1.0)))
+            # agents are initially generated neutral and
+            # their scepticism follows a normal distribution around the average scepticism level
+            list_of_agents.append(agent.Agent(0, random.gauss(0.5, 0.1)))
         # assign opinions to agents
         agent_indexes = random.sample(range(len(list_of_agents)), k=self.num_liars + self.num_experts)
+        # declare liars & experts
+        # they will not change their opinion (scepticism = 1)
         for a in agent_indexes[:self.num_liars]:
             list_of_agents[a].opinion = -1
+            list_of_agents[a].scepticism = 1
         for a in agent_indexes[self.num_liars:]:
             list_of_agents[a].opinion = 1
+            list_of_agents[a].scepticism = 1
         return list_of_agents
 
-    # initalize connecticity matrix
-    def _initalize_connecticity_matrix(self):
+    # initialize connectivity matrix
+    def _initialize_connectivity_matrix(self):
         connectivity_matrix = np.zeros((self.num_agents, self.num_agents))
         for i in range(len(connectivity_matrix)):
             # guarantee that every agent is in at least one phonebook by someone else
@@ -91,7 +97,7 @@ class Environment:
             elif winner == 2:
                 agent_a.evaluate_opinion(agent_b.opinion)
 
-    # printing stistics/results of simulation
+    # printing statistics/results of simulation
     def simulations_stats(self):
         countTrue = 0
         countNeutral = 0
@@ -124,7 +130,6 @@ class Environment:
             receiver_index = random.randint(0, len(sender_phonebook))
             receiver = self.agent_list[receiver_index]
             self.agent_communication(sender, receiver)
-
 
     # initiates the simulation
     def run_simulation(self):
