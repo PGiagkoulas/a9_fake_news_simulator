@@ -1,6 +1,7 @@
 import sys
 import argparse
 from cmd import Cmd
+
 # User defined Imports ugly python import syntax >:(
 sys.path.append('./')
 import environment
@@ -9,19 +10,16 @@ parser = argparse.ArgumentParser(description='Run a simulation')
 parser.add_argument('--n_agents', type=int, default=10, help='Give the number of agents of the network.')
 parser.add_argument('--n_liars', type=int, default=1, help='Give the number of liars of the network.')
 parser.add_argument('--n_experts', type=int, default=1, help='Give the number of experts of the network.')
-parser.add_argument('--n_connections', type=int, default=3, help='Give the number of connections in the network.')
+parser.add_argument('--n_connections', type=int, default=10, help='Give the number of connections in the network.')
 parser.add_argument('--n_news', type=int, default=1, help='Give the number of news in the network.')
 parser.add_argument('--n_steps', type=int, default=50, help='Give the number of steps of the simulation.')
 
 args = parser.parse_args()
 
+
 def main():
-    if not len(sys.argv) > 1:
-        MyPrompt().cmdloop()
-    else:
-        network = environment.Environment(args.n_agents, args.n_liars, args.n_experts,
-                                          args.n_connections, args.n_news, args.n_steps)
-        network.run_simulation()
+    MyPrompt().cmdloop()
+
 
 
 class MyPrompt(Cmd):
@@ -31,7 +29,7 @@ class MyPrompt(Cmd):
         n_agents: 10 
         n_liars: 1 
         n_experts: 1  
-        n_connections: 3 
+        n_connections: 10 
         n_news: 1 
         n_steps: 50 \n
         If you want to start the simulation with these values enter 'start'. 
@@ -51,11 +49,15 @@ class MyPrompt(Cmd):
             if inp > 0:
                 args.n_agents = inp
                 print("Setting number of agents to '{}'".format(inp))
+            if inp > args.n_connections:
+                print("Number of agents must be at most the number of connections so that each agent has at least "
+                      "one incoming connection")
+                raise ValueError
+            # todo: raise different error
             else:
                 raise ValueError
         except:
             print("Wrong input type, please enter an integer larger than 0")
-
 
     def do_n_liars(self, inp):
         '''Change the number of liars. Must be an integer larger than 0'''
@@ -88,6 +90,10 @@ class MyPrompt(Cmd):
             if inp > 0:
                 args.n_connections = inp
                 print("Setting number of connections to '{}'".format(inp))
+            if inp < args.n_agents:
+                print("Number of connections must be at least equal to number of agents so that each agent can have "
+                      "one ingoing connection")
+                raise ValueError
             else:
                 raise ValueError
         except:
@@ -128,7 +134,7 @@ class MyPrompt(Cmd):
                n_news: %s
                n_steps: %s 
                """
-        print(text %(args.n_agents, args.n_liars, args.n_experts,args.n_connections, args.n_news, args.n_steps))
+        print(text % (args.n_agents, args.n_liars, args.n_experts, args.n_connections, args.n_news, args.n_steps))
 
     def do_show_description(self, inp):
         '''Shows a description of the program and how the simulation works'''
@@ -137,7 +143,7 @@ class MyPrompt(Cmd):
                 'Design of Multi-Agent Systems'.
                 Authors: Panagiotis, Anton, Manvi, Daniel
                """
-        #todo: write better description
+        # todo: write better description
         print(text)
 
     def default(self, inp):
@@ -151,6 +157,7 @@ class MyPrompt(Cmd):
             self.do_show_values()
         if inp == 'show_description':
             self.do_show_description()
+
 
 if __name__ == "__main__":
     main()
