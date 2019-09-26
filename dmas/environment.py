@@ -29,7 +29,7 @@ class Environment:
                  num_news,
                  num_steps,
                  communication_protocol="random",
-                 conversation_protocol="battle_discussion"):
+                 conversation_protocol="majority_opinion"):
         self.num_agents = num_agents
         self.num_liars = num_liars
         self.num_experts = num_experts
@@ -74,22 +74,29 @@ class Environment:
             connectivity_matrix[pair[0], pair[1]] = 1
         return connectivity_matrix
 
-    # communication protocol
-    def agent_communication(self, agent_a, agent_b):
-        if agent_a.opinion != agent_b.opinion:
-            # determine winning opinion of the communication
-            # neutral opinions do not spread, the other agent's opinion automatically wins
-            if agent_a.opinion == 0:
-                winner = 2  # opinion of agent_b is the outcome of discussion
-            elif agent_b.opinion == 0:
-                winner = 1  # opinion of agent_a is the outcome of discussion
-            else:  # randomly decide winning opinion
-                winner = random.randint(1, 2)
-            # resolve agent acceptance
-            if winner == 1:
-                agent_b.evaluate_opinion(agent_a.opinion)
-            elif winner == 2:
-                agent_a.evaluate_opinion(agent_b.opinion)
+    # conversation protocol
+    def agent_conversation(self, agent_a, agent_b):
+        if self.conversation_protocol == "battle_discussion":
+            # agent_a is the sender and agent_b the receiver
+            if agent_a.opinion != agent_b.opinion:
+                # determine winning opinion of the communication
+                # neutral opinions do not spread, the other agent's opinion automatically wins
+                if agent_a.opinion == 0:
+                    winner = 2  # opinion of agent_b is the outcome of discussion
+                elif agent_b.opinion == 0:
+                    winner = 1  # opinion of agent_a is the outcome of discussion
+                else:  # randomly decide winning opinion
+                    winner = random.randint(1, 2)
+                # resolve agent acceptance
+                if winner == 1:
+                    agent_b.evaluate_opinion(agent_a.opinion)
+                elif winner == 2:
+                    agent_a.evaluate_opinion(agent_b.opinion)
+        elif self.conversation_protocol == "majority_opinion":
+            # agent_a is the sender and agent_b the receiver
+            agent_b.opinion_base.append(agent_a.opinion)
+            print("test")
+
 
     # printing stistics/results of simulation
     def simulations_stats(self):
@@ -123,7 +130,7 @@ class Environment:
                                 if (sender_connectivity[index] != 0 and index != sender_index)]
             receiver_index = random.randint(0, len(sender_phonebook))
             receiver = self.agent_list[receiver_index]
-            self.agent_communication(sender, receiver)
+            self.agent_conversation(sender, receiver)
 
 
     # initiates the simulation
