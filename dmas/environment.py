@@ -50,8 +50,10 @@ class Environment:
         agent_indexes = random.sample(range(len(list_of_agents)), k=self.num_liars + self.num_experts)
         for a in agent_indexes[:self.num_liars]:
             list_of_agents[a].opinion = -1
+            list_of_agents[a].stubborn = True
         for a in agent_indexes[self.num_liars:]:
             list_of_agents[a].opinion = 1
+            list_of_agents[a].stubborn = True
         return list_of_agents
 
     # initalize connecticity matrix
@@ -94,8 +96,10 @@ class Environment:
                     agent_a.evaluate_opinion(agent_b.opinion)
         elif self.conversation_protocol == "majority_opinion":
             # agent_a is the sender and agent_b the receiver
-            agent_b.opinion_base.append(agent_a.opinion)
-            print("test")
+            # neutral opinions don't spread
+            if agent_a.opinion != 0:
+                agent_b.opinion_base.append(agent_a.opinion)
+                agent_b.form_opinion()
 
 
     # printing stistics/results of simulation
