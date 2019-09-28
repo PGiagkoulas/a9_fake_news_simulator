@@ -97,6 +97,7 @@ class Environment:
         elif self.conversation_protocol == "majority_opinion":
             # agent_a is the sender and agent_b the receiver
             # neutral opinions don't spread
+            # todo: add phonebook exchange
             if agent_a.opinion != 0:
                 agent_b.opinion_base.append(agent_a.opinion)
                 agent_b.form_opinion()
