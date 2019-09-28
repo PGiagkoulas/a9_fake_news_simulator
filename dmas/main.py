@@ -186,7 +186,8 @@ class MyPrompt(Cmd):
             return self.do_exit(inp)
         if inp == 'c' or inp == 'start':
             network = environment.Environment(args.n_agents, args.n_liars, args.n_experts,
-                                              args.n_connections, args.n_news, args.n_steps)
+                                              args.n_connections, args.n_news, args.n_steps,
+                                              args.communication_protocol, args.conversation_protocol)
             network.run_simulation()
         if inp == 'show_values':
             self.do_show_values()
