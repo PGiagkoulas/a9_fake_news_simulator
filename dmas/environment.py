@@ -37,7 +37,7 @@ class Environment:
         self.num_news = num_news
         self.num_steps = num_steps
         self.agent_list = self._generate_agents()
-        self.connectivity_matrix = self._initalize_connecticity_matrix()
+        self.connectivity_matrix = self._initialize_connectivity_matrix()
         self.communication_protocol = communication_protocol
         self.conversation_protocol = conversation_protocol
 
@@ -45,9 +45,13 @@ class Environment:
     def _generate_agents(self):
         list_of_agents = []
         for number in range(self.num_agents):
-            list_of_agents.append(agent.Agent(0, random.uniform(0.0, 1.0)))
+            # agents are initially generated neutral and
+            # their scepticism follows a normal distribution around the average scepticism level
+            list_of_agents.append(agent.Agent(0, random.gauss(0.5, 0.1)))
         # assign opinions to agents
         agent_indexes = random.sample(range(len(list_of_agents)), k=self.num_liars + self.num_experts)
+        # declare liars & experts
+        # they will not change their opinion (scepticism = 1)
         for a in agent_indexes[:self.num_liars]:
             list_of_agents[a].opinion = -1
             list_of_agents[a].scepticism = 1
@@ -56,8 +60,8 @@ class Environment:
             list_of_agents[a].scepticism = 1
         return list_of_agents
 
-    # initalize connecticity matrix
-    def _initalize_connecticity_matrix(self):
+    # initialize connectivity matrix
+    def _initialize_connectivity_matrix(self):
         connectivity_matrix = np.zeros((self.num_agents, self.num_agents))
         for i in range(len(connectivity_matrix)):
             # guarantee that every agent is in at least one phonebook by someone else
@@ -94,16 +98,16 @@ class Environment:
                     agent_b.evaluate_opinion(agent_a.opinion)
                 elif winner == 2:
                     agent_a.evaluate_opinion(agent_b.opinion)
+                self.exchange_phonebooks(agent_a, agent_b)
         elif self.conversation_protocol == "majority_opinion":
             # agent_a is the sender and agent_b the receiver
             # neutral opinions don't spread
-            # todo: add phonebook exchange
             if agent_a.opinion != 0:
                 agent_b.opinion_base.append(agent_a.opinion)
                 agent_b.form_opinion()
+            self.exchange_phonebooks(agent_a, agent_b)
 
-
-    # printing stistics/results of simulation
+    # printing statistics/results of simulation
     def simulations_stats(self):
         countTrue = 0
         countNeutral = 0
@@ -121,22 +125,41 @@ class Environment:
         print(">> Connectivity matrix:")
         print(self.connectivity_matrix)
 
+    # exchange of phonebooks/connectivity matrix update
+    def exchange_phonebooks(self, agent_a, agent_b):
+        # retrieve indexes of the two agents
+        index_a = self.agent_list.index(agent_a)
+        index_b = self.agent_list.index(agent_b)
+        # retrieve their individual phonebooks
+        phonebook_a = self.connectivity_matrix[index_a, :]
+        phonebook_b = self.connectivity_matrix[index_b, :]
+        # take their union
+        union_phonebook = [(connection if connection < 1 else 1) for connection in phonebook_a+phonebook_b]
+        # update connectivity matrix
+        self.connectivity_matrix[index_a, :] = union_phonebook
+        self.connectivity_matrix[index_b, :] = union_phonebook
+        # make certain no connection is made from the agents to themselves
+        self.connectivity_matrix[index_a, index_a] = 0
+        self.connectivity_matrix[index_b, index_b] = 0
+
+
     def run_communication_protocol(self):
         if self.communication_protocol == "random":
             # choose agent to communicate
             # create set of agents who have an outgoing connections
             valid_senders = [index for index in range(0, self.num_agents) if 1 in self.connectivity_matrix[index, :]]
-            sender_index = random.sample(valid_senders, k=1)[0]
+            sender_index = random.sample(valid_senders, k=1)[0]  # sample returns a list
             sender = self.agent_list[sender_index]
             # choose receiver
             # getting sender's connections
             sender_connectivity = self.connectivity_matrix[sender_index, :]
+            # getting ids of possible receivers
             sender_phonebook = [index for index in range(0, self.num_agents)
                                 if (sender_connectivity[index] != 0 and index != sender_index)]
-            receiver_index = random.randint(0, len(sender_phonebook))
+            # randomly pick one of the possible receivers
+            receiver_index = sender_phonebook[random.randint(0, len(sender_phonebook)-1)]  # randint is inclusive
             receiver = self.agent_list[receiver_index]
             self.agent_conversation(sender, receiver)
-
 
     # initiates the simulation
     def run_simulation(self):
