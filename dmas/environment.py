@@ -80,23 +80,32 @@ class Environment:
             connectivity_matrix[pair[0], pair[1]] = 1
         return connectivity_matrix
 
-    # communication protocol
-    def agent_communication(self, agent_a, agent_b):
-        if agent_a.opinion != agent_b.opinion:
-            # determine winning opinion of the communication
-            # neutral opinions do not spread, the other agent's opinion automatically wins
-            if agent_a.opinion == 0:
-                winner = 2  # opinion of agent_b is the outcome of discussion
-            elif agent_b.opinion == 0:
-                winner = 1  # opinion of agent_a is the outcome of discussion
-            else:  # randomly decide winning opinion
-                winner = random.randint(1, 2)
-            # resolve agent acceptance
-            if winner == 1:
-                agent_b.evaluate_opinion(agent_a.opinion)
-            elif winner == 2:
-                agent_a.evaluate_opinion(agent_b.opinion)
-        self.exchange_phonebooks(agent_a, agent_b)
+    # conversation protocol
+    def agent_conversation(self, agent_a, agent_b):
+        if self.conversation_protocol == "battle_discussion":
+            # agent_a is the sender and agent_b the receiver
+            if agent_a.opinion != agent_b.opinion:
+                # determine winning opinion of the communication
+                # neutral opinions do not spread, the other agent's opinion automatically wins
+                if agent_a.opinion == 0:
+                    winner = 2  # opinion of agent_b is the outcome of discussion
+                elif agent_b.opinion == 0:
+                    winner = 1  # opinion of agent_a is the outcome of discussion
+                else:  # randomly decide winning opinion
+                    winner = random.randint(1, 2)
+                # resolve agent acceptance
+                if winner == 1:
+                    agent_b.evaluate_opinion(agent_a.opinion)
+                elif winner == 2:
+                    agent_a.evaluate_opinion(agent_b.opinion)
+                self.exchange_phonebooks(agent_a, agent_b)
+        elif self.conversation_protocol == "majority_opinion":
+            # agent_a is the sender and agent_b the receiver
+            # neutral opinions don't spread
+            if agent_a.opinion != 0:
+                agent_b.opinion_base.append(agent_a.opinion)
+                agent_b.form_opinion()
+            self.exchange_phonebooks(agent_a, agent_b)
 
     # printing statistics/results of simulation
     def simulations_stats(self):
