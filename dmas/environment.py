@@ -29,7 +29,7 @@ class Environment:
                  num_news,
                  num_steps,
                  communication_protocol="random",
-                 conversation_protocol="battle_discussion"):
+                 conversation_protocol="majority_opinion"):
         self.num_agents = num_agents
         self.num_liars = num_liars
         self.num_experts = num_experts
@@ -150,7 +150,7 @@ class Environment:
             # randomly pick one of the possible receivers
             receiver_index = sender_phonebook[random.randint(0, len(sender_phonebook)-1)]  # randint is inclusive
             receiver = self.agent_list[receiver_index]
-            self.agent_communication(sender, receiver)
+            self.agent_conversation(sender, receiver)
 
     # initiates the simulation
     def run_simulation(self):

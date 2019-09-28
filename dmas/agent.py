@@ -1,4 +1,5 @@
 import random
+from statistics import mode
 
 class Agent:
 
