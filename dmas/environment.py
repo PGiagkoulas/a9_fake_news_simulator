@@ -96,6 +96,7 @@ class Environment:
                 agent_b.evaluate_opinion(agent_a.opinion)
             elif winner == 2:
                 agent_a.evaluate_opinion(agent_b.opinion)
+        self.exchange_phonebooks(agent_a, agent_b)
 
     # printing statistics/results of simulation
     def simulations_stats(self):
@@ -115,19 +116,39 @@ class Environment:
         print(">> Connectivity matrix:")
         print(self.connectivity_matrix)
 
+    # exchange of phonebooks/connectivity matrix update
+    def exchange_phonebooks(self, agent_a, agent_b):
+        # retrieve indexes of the two agents
+        index_a = self.agent_list.index(agent_a)
+        index_b = self.agent_list.index(agent_b)
+        # retrieve their individual phonebooks
+        phonebook_a = self.connectivity_matrix[index_a, :]
+        phonebook_b = self.connectivity_matrix[index_b, :]
+        # take their union
+        union_phonebook = [(connection if connection < 1 else 1) for connection in phonebook_a+phonebook_b]
+        # update connectivity matrix
+        self.connectivity_matrix[index_a, :] = union_phonebook
+        self.connectivity_matrix[index_b, :] = union_phonebook
+        # make certain no connection is made from the agents to themselves
+        self.connectivity_matrix[index_a, index_a] = 0
+        self.connectivity_matrix[index_b, index_b] = 0
+
+
     def run_communication_protocol(self):
         if self.communication_protocol == "random":
             # choose agent to communicate
             # create set of agents who have an outgoing connections
             valid_senders = [index for index in range(0, self.num_agents) if 1 in self.connectivity_matrix[index, :]]
-            sender_index = random.sample(valid_senders, k=1)[0]
+            sender_index = random.sample(valid_senders, k=1)[0]  # sample returns a list
             sender = self.agent_list[sender_index]
             # choose receiver
             # getting sender's connections
             sender_connectivity = self.connectivity_matrix[sender_index, :]
+            # getting ids of possible receivers
             sender_phonebook = [index for index in range(0, self.num_agents)
                                 if (sender_connectivity[index] != 0 and index != sender_index)]
-            receiver_index = random.randint(0, len(sender_phonebook))
+            # randomly pick one of the possible receivers
+            receiver_index = sender_phonebook[random.randint(0, len(sender_phonebook)-1)]  # randint is inclusive
             receiver = self.agent_list[receiver_index]
             self.agent_communication(sender, receiver)
 
