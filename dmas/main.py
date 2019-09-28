@@ -13,6 +13,8 @@ parser.add_argument('--n_experts', type=int, default=1, help='Give the number of
 parser.add_argument('--n_connections', type=int, default=10, help='Give the number of connections in the network.')
 parser.add_argument('--n_news', type=int, default=1, help='Give the number of news in the network.')
 parser.add_argument('--n_steps', type=int, default=50, help='Give the number of steps of the simulation.')
+parser.add_argument('--communication_protocol', type=str, default="random", help='Determines the way the agents choose whom to call. Current options: ["random"].')
+parser.add_argument('--conversation_protocol', type=str, default="battle_discussion", help='Determines the way a call is resolved. Current options: ["battle_discussion", "majority_opinion"].')
 
 args = parser.parse_args()
 
@@ -31,7 +33,9 @@ class MyPrompt(Cmd):
         n_experts: 1  
         n_connections: 10 
         n_news: 1 
-        n_steps: 50 \n
+        n_steps: 50 
+        communication_protocol: 'random'
+        conversation_protocol: 'battle_discussion' \n
         If you want to start the simulation with these values enter 'start'. 
         Otherwise change values by entering '{parameter} {value}' and then enter 'start'.
         Enter '?' for an overview over all commands.
@@ -133,8 +137,17 @@ class MyPrompt(Cmd):
                n_connections: %s
                n_news: %s
                n_steps: %s 
+               communication_protocol: %s
+               conversation_protocol: %s
                """
-        print(text % (args.n_agents, args.n_liars, args.n_experts, args.n_connections, args.n_news, args.n_steps))
+        print(text % (args.n_agents,
+                      args.n_liars,
+                      args.n_experts,
+                      args.n_connections,
+                      args.n_news,
+                      args.n_steps,
+                      args.communication_protocol,
+                      args.conversation_protocol))
 
     def do_show_description(self, inp):
         '''Shows a description of the program and how the simulation works'''
@@ -145,6 +158,28 @@ class MyPrompt(Cmd):
                """
         # todo: write better description
         print(text)
+
+    def do_communication_protocol(self, inp):
+        '''The protocol that determines how agent choose to call other agents.
+        random: a random agent is picked from the phonebook.'''
+        if inp != "random":
+            print("You can only pick from the following options:  ['random'] ")
+        else:
+            args.communication_protocol = inp
+            print("Setting communication_protocol to '{}'".format(inp))
+
+    def do_conversation_protocol(self, inp):
+        '''The protocol that determines how a call changes the opinion of an agent.
+        battle_discussion: the call causes a discussion that has a winner. The loser of the discussion then takes on
+                            the opinion of the winner with the probability 1-scepticism.
+        majority_opinion: The receiver of the call remembers the opinion of the caller and then forms their opinion based
+                          on what the majority of callers thinks. If a new opinion leads to a tie in opinion formation, the
+                          old opinion is kept with the probability of the skepticism value.'''
+        if inp != "battle_discussion" and inp != "majority_opinion":
+            print("You can only pick from the following options: ['battle_discussion', 'majority_opinion'] ")
+        else:
+            args.conversation_protocol = inp
+            print("Setting conversation_protocol to '{}'".format(inp))
 
     def default(self, inp):
         if inp == 'x' or inp == 'q':
