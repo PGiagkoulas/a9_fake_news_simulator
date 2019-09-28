@@ -7,7 +7,6 @@ class Agent:
     opinion = None  # the current belief of the agent (-1: false, 0:neutral, 1: true) (can become a list later for multiple news)
     sceptisicm = None  # percent chance to change opinion when receives a different opinion
     opinion_base = []  # The opinions that the agent heard from other persons
-    stubborn = False
 
     # initializer
     def __init__(self, opinion, naivete):
@@ -23,7 +22,7 @@ class Agent:
 
     def form_opinion(self):
         # if the agent is either a liar or an expert they are 'stubborn' and don't change their opinion at all
-        if self.stubborn:
+        if self.sceptisicm == 1:
             pass
         # in case there is a tie between "true" and "false" information
         if self.opinion_base.count(1) == self.opinion_base.count(-1):

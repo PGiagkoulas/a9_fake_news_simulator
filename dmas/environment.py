@@ -50,10 +50,10 @@ class Environment:
         agent_indexes = random.sample(range(len(list_of_agents)), k=self.num_liars + self.num_experts)
         for a in agent_indexes[:self.num_liars]:
             list_of_agents[a].opinion = -1
-            list_of_agents[a].stubborn = True
+            list_of_agents[a].scepticism = 1
         for a in agent_indexes[self.num_liars:]:
             list_of_agents[a].opinion = 1
-            list_of_agents[a].stubborn = True
+            list_of_agents[a].scepticism = 1
         return list_of_agents
 
     # initalize connecticity matrix
