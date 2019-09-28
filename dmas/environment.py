@@ -47,7 +47,7 @@ class Environment:
         for number in range(self.num_agents):
             # agents are initially generated neutral and
             # their scepticism follows a normal distribution around the average scepticism level
-            list_of_agents.append(agent.Agent(0, random.gauss(0.5, 0.1)))
+            list_of_agents.append(agent.Agent(0, random.gauss(0.5, 0.1), self.num_agents))
         # assign opinions to agents
         agent_indexes = random.sample(range(len(list_of_agents)), k=self.num_liars + self.num_experts)
         # declare liars & experts
@@ -103,7 +103,7 @@ class Environment:
             # agent_a is the sender and agent_b the receiver
             # neutral opinions don't spread
             if agent_a.opinion != 0:
-                agent_b.opinion_base.append(agent_a.opinion)
+                agent_b.opinion_base[self.agent_list.index(agent_a)] = agent_a.opinion
                 agent_b.form_opinion()
             self.exchange_phonebooks(agent_a, agent_b)
 
