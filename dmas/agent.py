@@ -17,17 +17,17 @@ class Agent:
     # evaluate new opinion from discussion
     def evaluate_opinion(self, new_opinion):
         # accept or not
-        if random.uniform(0.0, 1.0) > self.sceptisicm:
+        if random.uniform(0.0, 1.0) > self.scepticism:
             self.opinion = new_opinion
 
     def form_opinion(self):
         # if the agent is either a liar or an expert they are 'stubborn' and don't change their opinion at all
-        if self.sceptisicm == 1:
+        if self.scepticism == 1:
             pass
         # in case there is a tie between "true" and "false" information
         if self.opinion_base.count(1) == self.opinion_base.count(-1):
             # then the agent takes on the last opinion they heard with the probability of 1 - skepticism
-            if random.uniform(0.0, 1.0) > self.sceptisicm:
+            if random.uniform(0.0, 1.0) > self.scepticism:
                 self.opinion = self.opinion_base[-1]
         # if there is no tie, we just take the mode
         else:

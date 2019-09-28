@@ -29,7 +29,7 @@ class Environment:
                  num_news,
                  num_steps,
                  communication_protocol="random",
-                 conversation_protocol="majority_opinion"):
+                 conversation_protocol="battle_discussion"):
         self.num_agents = num_agents
         self.num_liars = num_liars
         self.num_experts = num_experts
