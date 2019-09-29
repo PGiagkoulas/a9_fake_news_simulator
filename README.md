@@ -11,10 +11,6 @@ We suggest the use of Anaconda or Miniconda to create the environment:
 You can follow [this](https://problemsolvingwithpython.com/01-Orientation/01.05-Installing-Anaconda-on-Linux/) tutorial to install anaconda on linux.
 
 ## Environment
-First deactivate the current environment, if there is any activated, by running 
-```bat
-conda deactivate
-```
 To install the environment, while in the source directory of this package, run:
 ```bat
 conda env create -f environment.yml
@@ -25,6 +21,8 @@ If you are using linux you get an error regarding access rights go to ~/anaconda
 sudo chown --recursive yourUserName .
 
 ```
+and then do the second step again.
+
 Then run
 ```bat
 conda activate fake_news_env
