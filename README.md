@@ -11,7 +11,7 @@ We suggest the use of Anaconda or Miniconda to create the environment:
 You can follow [this](https://problemsolvingwithpython.com/01-Orientation/01.05-Installing-Anaconda-on-Linux/) tutorial to install anaconda on linux.
 
 ## Environment
-First deactivate the current environment, if there is any activated by running 
+First deactivate the current environment, if there is any activated, by running 
 ```bat
 conda deactivate
 ```
@@ -25,8 +25,13 @@ If you are using linux you get an error regarding access rights go to ~/anaconda
 sudo chown --recursive yourUserName .
 
 ```
+Then run
+```bat
+conda activate fake_news_env
+
+```
 ## Running the code
-To run a simulation, run:
+To run a simulation go to the a9_fake_news_simulator directory and run:
 ```bat
 python main.py
 ```
