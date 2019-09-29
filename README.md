@@ -21,7 +21,7 @@ If you are using linux and you get an error regarding access rights go to ~/anac
 sudo chown --recursive yourUserName .
 
 ```
-and then do the second step again.
+and then create the environment again.
 
 Then run
 ```bat
