@@ -15,7 +15,7 @@ To install the environment, while in the source directory of this package, run:
 ```bat
 conda env create -f environment.yml
 ```
-If you are using linux you get an error regarding access rights go to ~/anaconda3 and run
+If you are using linux and you get an error regarding access rights go to ~/anaconda3 and run
 
 ```bat
 sudo chown --recursive yourUserName .
