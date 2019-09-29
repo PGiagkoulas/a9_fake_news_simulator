@@ -25,7 +25,7 @@ def main():
 
 
 class MyPrompt(Cmd):
-    prompt = 'dmas> '
+    prompt = 'fake_news> '
     intro = """
         Welcome! The default parameter values are: \n
         n_agents: 10 
