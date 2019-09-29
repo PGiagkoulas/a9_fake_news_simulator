@@ -8,12 +8,19 @@ We suggest the use of Anaconda or Miniconda to create the environment:
 
 [Anaconda](https://www.anaconda.com/distribution/)
 
+You can follow [this](https://problemsolvingwithpython.com/01-Orientation/01.05-Installing-Anaconda-on-Linux/) tutorial to install anaconda on linux.
+
 ## Environment
 To install the environment, while in the proper directory, run:
 ```bat
 conda env create -f environment.yml
 ```
+If you get an error regarding access rights go to ~/anaconda3 and run
 
+```bat
+sudo chown --recursive yourUserName .
+
+```
 ## Running the code
 To run a simulation, run:
 ```bat
