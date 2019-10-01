@@ -96,8 +96,10 @@ class Environment:
                 # resolve agent acceptance
                 if winner == 1:
                     agent_b.evaluate_opinion(agent_a.opinion)
+                    agent_b.opinion_base[self.agent_list.index(agent_a)] = agent_a.opinion
                 elif winner == 2:
                     agent_a.evaluate_opinion(agent_b.opinion)
+                    agent_a.opinion_base[self.agent_list.index(agent_b)] = agent_b.opinion
                 self.exchange_phonebooks(agent_a, agent_b)
         elif self.conversation_protocol == "majority_opinion":
             # agent_a is the sender and agent_b the receiver
@@ -134,7 +136,7 @@ class Environment:
         phonebook_a = self.connectivity_matrix[index_a, :]
         phonebook_b = self.connectivity_matrix[index_b, :]
         # take their union
-        union_phonebook = [(connection if connection < 1 else 1) for connection in phonebook_a+phonebook_b]
+        union_phonebook = [(connection if connection < 1 else 1) for connection in phonebook_a + phonebook_b]
         # update connectivity matrix
         self.connectivity_matrix[index_a, :] = union_phonebook
         self.connectivity_matrix[index_b, :] = union_phonebook
@@ -142,13 +144,9 @@ class Environment:
         self.connectivity_matrix[index_a, index_a] = 0
         self.connectivity_matrix[index_b, index_b] = 0
 
-
     def run_communication_protocol(self):
         if self.communication_protocol == "random":
-            # choose agent to communicate
-            # create set of agents who have an outgoing connections
-            valid_senders = [index for index in range(0, self.num_agents) if 1 in self.connectivity_matrix[index, :]]
-            sender_index = random.sample(valid_senders, k=1)[0]  # sample returns a list
+            sender_index = self.choose_random_sender()
             sender = self.agent_list[sender_index]
             # choose receiver
             # getting sender's connections
@@ -157,9 +155,33 @@ class Environment:
             sender_phonebook = [index for index in range(0, self.num_agents)
                                 if (sender_connectivity[index] != 0 and index != sender_index)]
             # randomly pick one of the possible receivers
-            receiver_index = sender_phonebook[random.randint(0, len(sender_phonebook)-1)]  # randint is inclusive
+            receiver_index = sender_phonebook[random.randint(0, len(sender_phonebook) - 1)]  # randint is inclusive
             receiver = self.agent_list[receiver_index]
             self.agent_conversation(sender, receiver)
+        if self.communication_protocol == "SYO":
+            # the name "learn new secrets" might be a bit misleading and should rather be "Spread your Opinion"
+            sender_index = self.choose_random_sender()
+            sender = self.agent_list[sender_index]
+            # choose receiver
+            # getting sender's connections
+            sender_connectivity = self.connectivity_matrix[sender_index, :]
+            # getting ids of possible receivers
+            sender_phonebook = [index for index in range(0, self.num_agents)
+                                if (sender_connectivity[index] != 0 and index != sender_index)]
+            # only select those contacts from which you know, that they don't know your opinion
+            valid_contacts = [contact for contact in sender_phonebook if
+                              self.agent_list[contact].opinion_base[sender_index] == 0]
+            # todo: as soon as the opinion_base is implemented dynamically this probably needs to change
+            if not valid_contacts:
+                return
+            receiver_index = valid_contacts[random.randint(0, len(valid_contacts) - 1)]  # randint is inclusive
+            receiver = self.agent_list[receiver_index]
+            self.agent_conversation(sender, receiver)
+
+    def choose_random_sender(self):
+        # choose agent to communicate
+        valid_senders = [index for index in range(0, self.num_agents) if 1 in self.connectivity_matrix[index, :]]
+        return random.sample(valid_senders, k=1)[0]  # sample returns a list
 
     # initiates the simulation
     def run_simulation(self):

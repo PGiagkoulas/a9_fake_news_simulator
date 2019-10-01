@@ -162,8 +162,8 @@ class MyPrompt(Cmd):
     def do_communication_protocol(self, inp):
         '''The protocol that determines how agent choose to call other agents.
         random: a random agent is picked from the phonebook.'''
-        if inp != "random":
-            print("You can only pick from the following options:  ['random'] ")
+        if inp != "random" and inp != "SYO":
+            print("You can only pick from the following options:  ['random', 'SYO] ")
         else:
             args.communication_protocol = inp
             print("Setting communication_protocol to '{}'".format(inp))
