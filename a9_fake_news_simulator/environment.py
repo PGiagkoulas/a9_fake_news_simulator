@@ -1,6 +1,7 @@
 import sys
 import random
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 
 sys.path.append('./')
@@ -124,6 +125,7 @@ class Environment:
         print(">> Number of False opinions : {0}".format(countFalse))
         print(">> Connectivity matrix:")
         print(self.connectivity_matrix)
+        return countTrue, countNeutral, countFalse
 
     # exchange of phonebooks/connectivity matrix update
     def exchange_phonebooks(self, agent_a, agent_b):
@@ -161,6 +163,14 @@ class Environment:
             receiver = self.agent_list[receiver_index]
             self.agent_conversation(sender, receiver)
 
+    def output_measures(self):
+        stats = self.simulations_stats()
+        results = pd.DataFrame({"#agents": self.num_agents}, index=[0])
+        results = results.join(pd.DataFrame({"#experts": stats[0]}, index=[0]))
+        results = results.join(pd.DataFrame({"#neutrals": stats[2]}, index=[0]))
+        results = results.join(pd.DataFrame({"#liars": stats[2]}, index=[0]))
+        return results
+
     # initiates the simulation
     def run_simulation(self):
         print(">> Initial configurations:")
@@ -170,3 +180,4 @@ class Environment:
             self.run_communication_protocol()
         print("<< END OF SIMULATION >>")
         self.simulations_stats()
+        print(self.output_measures())
