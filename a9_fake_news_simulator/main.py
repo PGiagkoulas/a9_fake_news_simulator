@@ -15,9 +15,9 @@ parser.add_argument('--cluster_distance', type=int, default=0, help='Give the am
 parser.add_argument('--n_news', type=int, default=1, help='Give the number of news in the network.')
 parser.add_argument('--n_steps', type=int, default=50, help='Give the number of steps of the simulation.')
 parser.add_argument('--communication_protocol', type=str, default="random",
-                    help='Determines the way the agents choose whom to call. Current options: ["random"].')
-parser.add_argument('--conversation_protocol', type=str, default="battle_discussion",
-                    help='Determines the way a call is resolved. Current options: ["battle_discussion", "majority_opinion"].')
+                    help='Determines the way the agents choose whom to call. Current options: ["random", "SYO", "CO"].')
+parser.add_argument('--conversation_protocol', type=str, default="discussion",
+                    help='Determines the way a call is resolved. Current options: ["discussion", "majority_opinion", "simple"].')
 
 args = parser.parse_args()
 
@@ -38,7 +38,7 @@ class MyPrompt(Cmd):
     n_news: 1 
     n_steps: 50 
     communication_protocol: 'random'
-    conversation_protocol: 'battle_discussion' \n
+    conversation_protocol: 'discussion' \n
     If you want to start the simulation with these values enter 'start'. 
     Otherwise change values by entering '{parameter} {value}' and then enter 'start'.
     Enter '?' for an overview over all commands.
@@ -167,27 +167,27 @@ class MyPrompt(Cmd):
     def do_communication_protocol(self, inp):
         '''The protocol that determines how agent choose to call other agents.
         random: a random agent is picked from the phonebook.'''
-        if inp != "random" and inp != "SYO":
-            print("You can only pick from the following options:  ['random', 'SYO] ")
+        if inp != "random" and inp != "SYO" and inp != "CO":
+            print("You can only pick from the following options:  ['random', 'SYO', 'CO'] ")
         else:
             args.communication_protocol = inp
             print("Setting communication_protocol to '{}'".format(inp))
 
     def do_conversation_protocol(self, inp):
         '''The protocol that determines how a call changes the opinion of an agent.
-        battle_discussion: the call causes a discussion that has a winner. The loser of the discussion then takes on
+        discussion: the call causes a discussion that has a winner. The loser of the discussion then takes on
                             the opinion of the winner with the probability 1-scepticism.
         majority_opinion: The receiver of the call remembers the opinion of the caller and then forms their opinion based
                           on what the majority of callers thinks. If a new opinion leads to a tie in opinion formation, the
                           old opinion is kept with the probability of the skepticism value.'''
-        if inp != "battle_discussion" and inp != "majority_opinion":
-            print("You can only pick from the following options: ['battle_discussion', 'majority_opinion'] ")
+        if inp != "discussion" and inp != "majority_opinion" and inp != "simple":
+            print("You can only pick from the following options: ['discussion', 'majority_opinion', 'simple'] ")
         else:
             args.conversation_protocol = inp
             print("Setting conversation_protocol to '{}'".format(inp))
 
     def do_cluster_distance(self, inp):
-        ''' Daniel, please add explanatoin here'''
+        ''' Daniel, please add explanation here'''
         # todo: add explanation
         try:
             inp = int(inp)

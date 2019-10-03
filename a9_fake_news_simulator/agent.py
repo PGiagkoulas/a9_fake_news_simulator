@@ -13,7 +13,7 @@ class Agent:
         self.scepticism = scepticism
         self.opinion = opinion
         # the agent initially thinks every other agent is neutral until they get called by them
-        self.opinion_base = {key: 0 for key in range(num_agents)}
+        self.opinion_base = {key: None for key in range(num_agents)}
 
     # evaluate new opinion from discussion
     def evaluate_opinion(self, new_opinion):
@@ -26,7 +26,7 @@ class Agent:
         if self.scepticism == 1:
             pass
         else:
-            opinion_base = [value for value in self.opinion_base.values() if value != 0]
+            opinion_base = [value for value in self.opinion_base.values() if value != 0 and value is not None]
             # in case there is a tie between "true" and "false" information
             if opinion_base.count(1) == opinion_base.count(-1):
                 # then the agent takes on the last opinion they heard with the probability of 1 - skepticism
