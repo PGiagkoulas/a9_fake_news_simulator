@@ -169,6 +169,10 @@ class Environment:
         results = results.join(pd.DataFrame({"#experts": stats[0]}, index=[0]))
         results = results.join(pd.DataFrame({"#neutrals": stats[2]}, index=[0]))
         results = results.join(pd.DataFrame({"#liars": stats[2]}, index=[0]))
+        results = results.join(pd.DataFrame({"#initial_connections": self.num_connections}, index=[0]))
+        results = results.join(pd.DataFrame({"#news": self.num_news}, index=[0]))
+        # if we change stop condition this needs to change:
+        results = results.join(pd.DataFrame({"#step": self.num_steps}, index=[0]))
         return results
 
     # initiates the simulation
