@@ -11,7 +11,7 @@ parser.add_argument('--n_agents', type=int, default=10, help='Give the number of
 parser.add_argument('--n_liars', type=int, default=1, help='Give the number of liars of the network.')
 parser.add_argument('--n_experts', type=int, default=1, help='Give the number of experts of the network.')
 parser.add_argument('--n_connections', type=int, default=10, help='Give the number of connections in the network.')
-parser.add_argument('--cluster_distance', type=int, default=1, help='Give the amount of clustering in the network.')
+parser.add_argument('--cluster_distance', type=int, default=0, help='Give the amount of clustering in the network.')
 parser.add_argument('--n_news', type=int, default=1, help='Give the number of news in the network.')
 parser.add_argument('--n_steps', type=int, default=50, help='Give the number of steps of the simulation.')
 parser.add_argument('--communication_protocol', type=str, default="random",
@@ -34,7 +34,7 @@ class MyPrompt(Cmd):
     n_liars: 1 
     n_experts: 1  
     n_connections: 10 
-    cluster_distance: 1
+    cluster_distance: 0
     n_news: 1 
     n_steps: 50 
     communication_protocol: 'random'
@@ -185,6 +185,19 @@ class MyPrompt(Cmd):
         else:
             args.conversation_protocol = inp
             print("Setting conversation_protocol to '{}'".format(inp))
+
+    def do_cluster_distance(self, inp):
+        ''' Daniel, please add explanatoin here'''
+        # todo: add explanation
+        try:
+            inp = int(inp)
+            if inp >= 0:
+                args.cluster_distance = inp
+                print("Setting cluster distance to '{}'".format(inp))
+            else:
+                raise ValueError
+        except:
+            print("Wrong input type, please enter an integer larger or equal to 0")
 
     def default(self, inp):
         if inp == 'x' or inp == 'q':

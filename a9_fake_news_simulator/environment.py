@@ -67,7 +67,7 @@ class Environment:
     # initialize connectivity matrix
     def _initialize_connectivity_matrix(self):
         connectivity_matrix = np.zeros((self.num_agents, self.num_agents), dtype=int)
-        if self.cluster_distance == -1:
+        if self.cluster_distance == 0:
             for i in range(len(connectivity_matrix)):
                 # guarantee that every agent is in at least one phonebook by someone else
                 neighbour = i
