@@ -32,7 +32,7 @@ class Environment:
                  num_news,
                  num_steps,
                  communication_protocol="random",
-                 conversation_protocol="battle_discussion"):
+                 conversation_protocol="discussion"):
         self.num_agents = num_agents
         self.num_liars = num_liars
         self.num_experts = num_experts
@@ -129,7 +129,9 @@ class Environment:
 
     # conversation protocol
     def agent_conversation(self, agent_a, agent_b):
-        if self.conversation_protocol == "battle_discussion":
+        # exchanging the phonebook always happens
+        self.exchange_phonebooks(agent_a, agent_b)
+        if self.conversation_protocol == "discussion":
             # agent_a is the sender and agent_b the receiver
             if agent_a.opinion != agent_b.opinion:
                 # determine winning opinion of the communication
@@ -145,14 +147,24 @@ class Environment:
                     agent_b.evaluate_opinion(agent_a.opinion)
                 elif winner == 2:
                     agent_a.evaluate_opinion(agent_b.opinion)
-                self.exchange_phonebooks(agent_a, agent_b)
+                # after evaluation, the opinion bases are updated
+                agent_b.opinion_base[self.agent_list.index(agent_a)] = agent_a.opinion
+                agent_a.opinion_base[self.agent_list.index(agent_b)] = agent_b.opinion
         elif self.conversation_protocol == "majority_opinion":
             # agent_a is the sender and agent_b the receiver
             # neutral opinions don't spread
             if agent_a.opinion != 0:
-                agent_b.opinion_base[self.agent_list.index(agent_a)] = agent_a.opinion
                 agent_b.form_opinion()
-            self.exchange_phonebooks(agent_a, agent_b)
+            # after evaluation, the opinion bases are updated
+            agent_b.opinion_base[self.agent_list.index(agent_a)] = agent_a.opinion
+            agent_a.opinion_base[self.agent_list.index(agent_b)] = agent_b.opinion
+        elif self.conversation_protocol == "simple":
+            # the receiver simply takes on the opinion of the sender with a certain probability based on their
+            # scepticism
+            if agent_a.opinion != 0:
+                agent_b.evaluate_opinion(agent_a.opinion)
+            agent_b.opinion_base[self.agent_list.index(agent_a)] = agent_a.opinion
+            agent_a.opinion_base[self.agent_list.index(agent_b)] = agent_b.opinion
 
     # printing statistics/results of simulation
     def simulations_stats(self):
@@ -190,11 +202,9 @@ class Environment:
         self.connectivity_matrix[index_b, index_b] = 0
 
     def run_communication_protocol(self):
+        # todo: refactor this monster of a method. so much redundancy, it really smells terrible
         if self.communication_protocol == "random":
-            # choose agent to communicate
-            # create set of agents who have an outgoing connections
-            valid_senders = [index for index in range(0, self.num_agents) if 1 in self.connectivity_matrix[index, :]]
-            sender_index = random.sample(valid_senders, k=1)[0]  # sample returns a list
+            sender_index = self.choose_random_sender()
             sender = self.agent_list[sender_index]
             # choose receiver
             # getting sender's connections
@@ -202,10 +212,56 @@ class Environment:
             # getting ids of possible receivers
             sender_phonebook = [index for index in range(0, self.num_agents)
                                 if (sender_connectivity[index] != 0 and index != sender_index)]
+            if not sender_phonebook:
+                # stop if the phonebook is empty
+                return
             # randomly pick one of the possible receivers
             receiver_index = sender_phonebook[random.randint(0, len(sender_phonebook) - 1)]  # randint is inclusive
             receiver = self.agent_list[receiver_index]
             self.agent_conversation(sender, receiver)
+        elif self.communication_protocol == "SYO":
+            # in this protocol makes agents try to convince everyone they know of their own opinion
+            sender_index = self.choose_random_sender()
+            sender = self.agent_list[sender_index]
+            # choose receiver
+            # getting sender's connections
+            sender_connectivity = self.connectivity_matrix[sender_index, :]
+            # getting ids of possible receivers
+            sender_phonebook = [index for index in range(0, self.num_agents)
+                                if (sender_connectivity[index] != 0 and index != sender_index)]
+            # only select those contacts from which you know, that they don't already share your opinion
+            valid_contacts = [contact for contact in sender_phonebook if
+                              sender.opinion_base[contact] != sender.opinion]
+            if not valid_contacts:
+                return
+            receiver_index = valid_contacts[random.randint(0, len(valid_contacts) - 1)]  # randint is inclusive
+            receiver = self.agent_list[receiver_index]
+            self.agent_conversation(sender, receiver)
+        elif self.communication_protocol == "CO":
+            # Communicate once is the better name for CMO
+            # in this protocol makes agents try to convince everyone they know of their own opinion
+            sender_index = self.choose_random_sender()
+            sender = self.agent_list[sender_index]
+            # choose receiver
+            # getting sender's connections
+            sender_connectivity = self.connectivity_matrix[sender_index, :]
+            # getting ids of possible receivers
+            sender_phonebook = [index for index in range(0, self.num_agents)
+                                if (sender_connectivity[index] != 0 and index != sender_index)]
+            # only select those contacts that you never had a conversation with
+            # after every conversation the opinion base is updated so can just check against None
+            valid_contacts = [contact for contact in sender_phonebook if
+                              sender.opinion_base[contact] is None]
+            if not valid_contacts:
+                return
+            receiver_index = valid_contacts[random.randint(0, len(valid_contacts) - 1)]  # randint is inclusive
+            receiver = self.agent_list[receiver_index]
+            self.agent_conversation(sender, receiver)
+
+    def choose_random_sender(self):
+        # choose agent to communicate
+        valid_senders = [index for index in range(0, self.num_agents) if 1 in self.connectivity_matrix[index, :]]
+        return random.sample(valid_senders, k=1)[0]  # sample returns a list
 
     # initiates the simulation
     def run_simulation(self):
