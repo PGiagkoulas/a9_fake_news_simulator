@@ -1,0 +1,10 @@
+n_agents 25
+n_liars 5
+n_experts 10
+n_connections 35
+cluster_distance 0
+n_news 1
+n_steps 50
+communication_protocol random
+conversation_protocol discussion
+runs 100
