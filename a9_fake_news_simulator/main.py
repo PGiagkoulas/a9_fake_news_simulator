@@ -53,14 +53,12 @@ class MyPrompt(Cmd):
         '''Change the number of agents. Must be an integer larger than 0'''
         try:
             inp = int(inp)
-            if inp > 0:
-                args.n_agents = inp
-                print("Setting number of agents to '{}'".format(inp))
             if inp > args.n_connections:
                 print("Number of agents must be at most the number of connections so that each agent has at least "
                       "one incoming connection")
-                raise ValueError
-            # todo: raise different error
+            elif inp > 0:
+                args.n_agents = inp
+                print("Setting number of agents to '{}'".format(inp))
             else:
                 raise ValueError
         except:
@@ -70,7 +68,9 @@ class MyPrompt(Cmd):
         '''Change the number of liars. Must be an integer larger than 0'''
         try:
             inp = int(inp)
-            if inp > 0:
+            if inp > args.n_agents - args.n_experts or inp > args.n_agents:
+                print("Number of liars cannot be higher than the number of agents")
+            elif inp > 0:
                 args.n_liars = inp
                 print("Setting number of liars to '{}'".format(inp))
             else:
@@ -82,7 +82,9 @@ class MyPrompt(Cmd):
         '''Change the number of experts. Must be an integer larger than 0'''
         try:
             inp = int(inp)
-            if inp > 0:
+            if inp > args.n_agents - args.n_liars or inp > args.n_agents:
+                print("Number of experts cannot be higher than the number of agents")
+            elif inp > 0:
                 args.n_experts = inp
                 print("Setting number of experts to '{}'".format(inp))
             else:
@@ -94,13 +96,12 @@ class MyPrompt(Cmd):
         '''Change the number of connections. Must be an integer larger than 0'''
         try:
             inp = int(inp)
-            if inp > 0:
-                args.n_connections = inp
-                print("Setting number of connections to '{}'".format(inp))
             if inp < args.n_agents:
                 print("Number of connections must be at least equal to number of agents so that each agent can have "
                       "one ingoing connection")
-                raise ValueError
+            elif inp > 0:
+                args.n_connections = inp
+                print("Setting number of connections to '{}'".format(inp))
             else:
                 raise ValueError
         except:
