@@ -1,6 +1,7 @@
 import sys
 import random
 import numpy as np
+import pandas as pd
 import math
 from tqdm import tqdm
 
@@ -167,7 +168,7 @@ class Environment:
             agent_a.opinion_base[self.agent_list.index(agent_b)] = agent_b.opinion
 
     # printing statistics/results of simulation
-    def simulations_stats(self):
+    def simulations_stats(self, printing=False):
         countTrue = 0
         countNeutral = 0
         countFalse = 0
@@ -178,11 +179,13 @@ class Environment:
                 countNeutral += 1
             if agent.opinion == -1:
                 countFalse += 1
-        print(">> Number of True opinions : {0}".format(countTrue))
-        print(">> Number of Neutral opinions : {0}".format(countNeutral))
-        print(">> Number of False opinions : {0}".format(countFalse))
-        print(">> Connectivity matrix:")
-        print(self.connectivity_matrix)
+        if printing:
+            print(">> Number of True opinions : {0}".format(countTrue))
+            print(">> Number of Neutral opinions : {0}".format(countNeutral))
+            print(">> Number of False opinions : {0}".format(countFalse))
+            print(">> Connectivity matrix:")
+            print(self.connectivity_matrix)
+        return countTrue, countNeutral, countFalse
 
     # exchange of phonebooks/connectivity matrix update
     def exchange_phonebooks(self, agent_a, agent_b):
@@ -263,6 +266,26 @@ class Environment:
         valid_senders = [index for index in range(0, self.num_agents) if 1 in self.connectivity_matrix[index, :]]
         return random.sample(valid_senders, k=1)[0]  # sample returns a list
 
+    def output_measures(self, step=None):
+        stats = self.simulations_stats()
+        results = pd.DataFrame({"#agents": self.num_agents}, index=[0])
+        if step:
+            results = results.join(pd.DataFrame({"current step": step}, index=[0]))
+        results = results.join(pd.DataFrame({"#positives": stats[0]}, index=[0]))
+        results = results.join(pd.DataFrame({"#neutrals": stats[1]}, index=[0]))
+        results = results.join(pd.DataFrame({"#negatives": stats[2]}, index=[0]))
+        results = results.join(pd.DataFrame({"#experts": self.num_experts}, index=[0]))
+        results = results.join(pd.DataFrame({"#liars": self.num_liars}, index=[0]))
+        results = results.join(pd.DataFrame({"#initial_connections": self.num_connections}, index=[0]))
+        results = results.join(pd.DataFrame({"#news": self.num_news}, index=[0]))
+        results = results.join(pd.DataFrame({"#cluster distance": self.cluster_distance}, index=[0]))
+        results = results.join(pd.DataFrame({"#comm_protocol": self.communication_protocol}, index=[0]))
+        results = results.join(pd.DataFrame({"#conv_protocol": self.conversation_protocol}, index=[0]))
+
+        # if we change stop condition this needs to change:
+        results = results.join(pd.DataFrame({"#steps": self.num_steps}, index=[0]))
+        return results
+
     # initiates the simulation
     def run_simulation(self):
         print(">> Initial configurations:")
@@ -270,8 +293,10 @@ class Environment:
         print("<< Beginning simulation >>")
         for step in tqdm(range(self.num_steps)):
             self.run_communication_protocol()
+            # print(self.output_measures(step))
         print("<< END OF SIMULATION >>")
-        self.simulations_stats()
+        self.simulations_stats(printing=True)
+        print(self.output_measures())
 
     # calculates distance
     def distance(self, xy1, xy2):
@@ -287,7 +312,6 @@ class Environment:
                 if self.connectivity_matrix[i][j] == 1:
                     temp_neighbours.append(self.connectivity_matrix[i][j])
             for n in temp_neighbours:
-                print(n)
                 # for each neighbour, check whether their neighbours are also connected (receivers) of the original agent
                 for nj in range(len(self.connectivity_matrix[n])):
                     if self.connectivity_matrix[i][nj] == 1:
