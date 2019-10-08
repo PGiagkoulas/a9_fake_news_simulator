@@ -67,6 +67,7 @@ class Environment:
 
     # initialize connectivity matrix
     def _initialize_connectivity_matrix(self):
+        total_connections = self.num_connections
         connectivity_matrix = np.zeros((self.num_agents, self.num_agents), dtype=int)
         if self.cluster_distance == 0:
             for i in range(len(connectivity_matrix)):
@@ -75,9 +76,9 @@ class Environment:
                 while neighbour == i:
                     neighbour = np.random.randint(low=0, high=self.num_agents)
                 connectivity_matrix[neighbour, i] = 1
-                self.num_connections -= 1
+                total_connections -= 1
 
-            for number in range(self.num_connections):
+            for number in range(total_connections):
                 # randomly decide connection between 2 agents
                 pair = np.random.randint(low=0, high=self.num_agents, size=2)
                 # repeat until pair is not already connected
@@ -99,9 +100,9 @@ class Environment:
                 while neighbour == i:
                     neighbour = np.random.randint(low=0, high=self.num_agents)
                 connectivity_matrix[neighbour, i] = 1
-                self.num_connections -= 1
+                total_connections -= 1
 
-            for number in range(self.num_connections):
+            for number in range(total_connections):
                 # randomly decide connection between 2 agents based on the spacial distance
 
                 pair[0] = np.random.randint(low=0, high=self.num_agents, size=1)
