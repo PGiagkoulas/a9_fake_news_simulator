@@ -1,12 +1,13 @@
 import os
 
-dirname = os.path.dirname(__file__)
-filename = os.path.join(dirname, './saved_experiments/')
+RELATIVE_PATH = os.path.dirname(__file__)
+EXPERIMENTS_PATH = os.path.join(RELATIVE_PATH, './saved_experiments/')
+RESULTS_PATH = os.path.join(RELATIVE_PATH, './results/')
 
 
 # helper function checks existence of given experiment name
 def experiment_exists(experiment_name):
-    return os.path.isfile(filename + experiment_name + '.txt')
+    return os.path.isfile(EXPERIMENTS_PATH + experiment_name + '.txt')
 
 
 # casts parameter values to the appropriate type
@@ -27,7 +28,7 @@ def load_experiment_settings(experiment_name='default'):
     # initialize parameters object
     params = dict()
     # read parameters from the text file
-    with open(filename + experiment_name + '.txt') as exp:
+    with open(EXPERIMENTS_PATH + experiment_name + '.txt') as exp:
         for line in exp:
             (key, val) = line.split()
             params[key] = val
@@ -35,6 +36,16 @@ def load_experiment_settings(experiment_name='default'):
     params = cast_param_values(params)
     return params
 
+
+# exports results' dataframe to specific directory
+def export_results(results_df):
+    # create directory if it's not present
+    if not os.path.isdir(RESULTS_PATH):
+        os.mkdir(RESULTS_PATH)
+    # calculate file number
+    n = sum(1 for f in os.listdir(RESULTS_PATH) if os.path.isfile(os.path.join(RESULTS_PATH, f)))
+    # export file
+    results_df.to_csv('{0}sim_runs_{1}.csv'.format(RESULTS_PATH, n+1))
 
 if __name__ == '__main__':
     load_experiment_settings('default')
