@@ -1,25 +1,13 @@
 import sys
-import argparse
 from cmd import Cmd
 
 # User defined Imports ugly python import syntax >:(
 sys.path.append('./')
 import environment
+import io_utils
 
-parser = argparse.ArgumentParser(description='Run a simulation')
-parser.add_argument('--n_agents', type=int, default=10, help='Give the number of agents of the network.')
-parser.add_argument('--n_liars', type=int, default=1, help='Give the number of liars of the network.')
-parser.add_argument('--n_experts', type=int, default=1, help='Give the number of experts of the network.')
-parser.add_argument('--n_connections', type=int, default=10, help='Give the number of connections in the network.')
-parser.add_argument('--cluster_distance', type=int, default=0, help='Give the amount of clustering in the network.')
-parser.add_argument('--n_news', type=int, default=1, help='Give the number of news in the network.')
-parser.add_argument('--n_steps', type=int, default=50, help='Give the number of steps of the simulation.')
-parser.add_argument('--communication_protocol', type=str, default="random",
-                    help='Determines the way the agents choose whom to call. Current options: ["random", "SYO", "CO"].')
-parser.add_argument('--conversation_protocol', type=str, default="discussion",
-                    help='Determines the way a call is resolved. Current options: ["discussion", "majority_opinion", "simple"].')
-
-args = parser.parse_args()
+# load default parameters from file
+args = io_utils.load_experiment_settings()
 
 
 def main():
@@ -53,11 +41,11 @@ class MyPrompt(Cmd):
         '''Change the number of agents. Must be an integer larger than 0'''
         try:
             inp = int(inp)
-            if inp > args.n_connections:
+            if inp > args['n_connections']:
                 print("Number of agents must be at most the number of connections so that each agent has at least "
                       "one incoming connection")
             elif inp > 0:
-                args.n_agents = inp
+                args['n_agents'] = inp
                 print("Setting number of agents to '{}'".format(inp))
             else:
                 raise ValueError
@@ -68,10 +56,10 @@ class MyPrompt(Cmd):
         '''Change the number of liars. Must be an integer larger than 0'''
         try:
             inp = int(inp)
-            if inp > args.n_agents - args.n_experts or inp > args.n_agents:
+            if inp > args['n_agents'] - args['n_experts'] or inp > args['n_agents']:
                 print("Number of liars cannot be higher than the number of agents")
             elif inp > 0:
-                args.n_liars = inp
+                args['n_liars'] = inp
                 print("Setting number of liars to '{}'".format(inp))
             else:
                 raise ValueError
@@ -82,10 +70,10 @@ class MyPrompt(Cmd):
         '''Change the number of experts. Must be an integer larger than 0'''
         try:
             inp = int(inp)
-            if inp > args.n_agents - args.n_liars or inp > args.n_agents:
+            if inp > args['n_agents'] - args['n_liars'] or inp > args['n_agents']:
                 print("Number of experts cannot be higher than the number of agents")
             elif inp > 0:
-                args.n_experts = inp
+                args['n_experts'] = inp
                 print("Setting number of experts to '{}'".format(inp))
             else:
                 raise ValueError
@@ -96,11 +84,11 @@ class MyPrompt(Cmd):
         '''Change the number of connections. Must be an integer larger than 0'''
         try:
             inp = int(inp)
-            if inp < args.n_agents:
+            if inp < args['n_agents']:
                 print("Number of connections must be at least equal to number of agents so that each agent can have "
                       "one ingoing connection")
             elif inp > 0:
-                args.n_connections = inp
+                args['n_connections'] = inp
                 print("Setting number of connections to '{}'".format(inp))
             else:
                 raise ValueError
@@ -112,7 +100,7 @@ class MyPrompt(Cmd):
         try:
             inp = int(inp)
             if inp > 0:
-                args.n_news = inp
+                args['n_news'] = inp
                 print("Setting number of news to '{}'".format(inp))
             else:
                 raise ValueError
@@ -124,7 +112,7 @@ class MyPrompt(Cmd):
         try:
             inp = int(inp)
             if inp > 0:
-                args.n_steps = inp
+                args['n_steps'] = inp
                 print("Setting number of steps to '{}'".format(inp))
             else:
                 raise ValueError
@@ -135,25 +123,25 @@ class MyPrompt(Cmd):
         '''Shows the current value of each parameter'''
         text = """
            The current parameter values are: \n
-           n_agents: %s 
-           n_liars: %s 
-           n_experts: %s 
-           n_connections: %s
-           cluster_distance: %s
-           n_news: %s
-           n_steps: %s 
-           communication_protocol: %s
-           conversation_protocol: %s
+           n_agents: {0} 
+           n_liars: {1}
+           n_experts: {2} 
+           n_connections: {3}
+           cluster_distance: {4}
+           n_news: {5}
+           n_steps: {6} 
+           communication_protocol: {7}
+           conversation_protocol: {8}
            """
-        print(text % (args.n_agents,
-                      args.n_liars,
-                      args.n_experts,
-                      args.n_connections,
-                      args.cluster_distance,
-                      args.n_news,
-                      args.n_steps,
-                      args.communication_protocol,
-                      args.conversation_protocol))
+        print(text.format(args['n_agents'],
+                      args['n_liars'],
+                      args['n_experts'],
+                      args['n_connections'],
+                      args['cluster_distance'],
+                      args['n_news'],
+                      args['n_steps'],
+                      args['communication_protocol'],
+                      args['conversation_protocol']))
 
     def do_show_description(self, inp):
         '''Shows a description of the program and how the simulation works'''
@@ -171,7 +159,7 @@ class MyPrompt(Cmd):
         if inp != "random" and inp != "SYO" and inp != "CO":
             print("You can only pick from the following options:  ['random', 'SYO', 'CO'] ")
         else:
-            args.communication_protocol = inp
+            args['communication_protocol'] = inp
             print("Setting communication_protocol to '{}'".format(inp))
 
     def do_conversation_protocol(self, inp):
@@ -184,7 +172,7 @@ class MyPrompt(Cmd):
         if inp != "discussion" and inp != "majority_opinion" and inp != "simple":
             print("You can only pick from the following options: ['discussion', 'majority_opinion', 'simple'] ")
         else:
-            args.conversation_protocol = inp
+            args['conversation_protocol'] = inp
             print("Setting conversation_protocol to '{}'".format(inp))
 
     def do_cluster_distance(self, inp):
@@ -193,20 +181,30 @@ class MyPrompt(Cmd):
         try:
             inp = int(inp)
             if inp >= 0:
-                args.cluster_distance = inp
+                args['cluster_distance'] = inp
                 print("Setting cluster distance to '{}'".format(inp))
             else:
                 raise ValueError
         except:
             print("Wrong input type, please enter an integer larger or equal to 0")
 
+    def do_load_experiment(self, inp):
+        if io_utils.experiment_exists(inp):
+            global args  # explicitly telling python to change the outer scope args variable
+            args = io_utils.load_experiment_settings(inp)
+            print("Loaded experiment {0}".format(inp))
+            print("Loaded parameters: {0}".format(args))
+
+        else:
+            print("Given experiment name does not exist. Check the file name and try again (not '.txt' is required)")
+
     def default(self, inp):
         if inp == 'x' or inp == 'q':
             return self.do_exit(inp)
         if inp == 'c' or inp == 'start':
-            network = environment.Environment(args.n_agents, args.n_liars, args.n_experts,
-                                              args.n_connections, args.cluster_distance, args.n_news, args.n_steps,
-                                              args.communication_protocol, args.conversation_protocol)
+            network = environment.Environment(args['n_agents'], args['n_liars'], args['n_experts'],
+                                              args['n_connections'], args['cluster_distance'], args['n_news'], args['n_steps'],
+                                              args['communication_protocol'], args['conversation_protocol'])
             print(network.clustering_coefficient())
             network.run_simulation()
         if inp == 'show_values':
