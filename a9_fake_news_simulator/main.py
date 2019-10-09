@@ -206,13 +206,14 @@ class MyPrompt(Cmd):
             # initialize dataframe to keep the results of each run
             run_results_df = pd.DataFrame()
             for run in range(1, args['runs']+1):
+                print("-Run {0}/{1}".format(run, args['runs']))
                 network = environment.Environment(args['n_agents'], args['n_liars'], args['n_experts'],
                                                   args['n_connections'], args['cluster_distance'], args['n_news'], args['n_steps'],
                                                   args['communication_protocol'], args['conversation_protocol'])
                 # combine run results with existing ones
                 run_results_df = pd.concat([run_results_df, network.run_simulation()])
-            # print results dataframe on terminal
-            print(run_results_df)
+            # export results dataframe
+            io_utils.export_results(run_results_df)
         if inp == 'show_values':
             self.do_show_values()
         if inp == 'show_description':

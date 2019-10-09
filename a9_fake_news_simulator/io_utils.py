@@ -2,7 +2,7 @@ import os
 
 RELATIVE_PATH = os.path.dirname(__file__)
 EXPERIMENTS_PATH = os.path.join(RELATIVE_PATH, './saved_experiments/')
-RESULTS_PATH = os.path.join(RELATIVE_PATH, './results/')
+RESULTS_PATH = os.path.join(RELATIVE_PATH, 'results\\')
 
 
 # helper function checks existence of given experiment name
@@ -46,6 +46,7 @@ def export_results(results_df):
     n = sum(1 for f in os.listdir(RESULTS_PATH) if os.path.isfile(os.path.join(RESULTS_PATH, f)))
     # export file
     results_df.to_csv('{0}sim_runs_{1}.csv'.format(RESULTS_PATH, n+1))
+    print(">> Results file was exported in directory: {0}".format(RESULTS_PATH))
 
 if __name__ == '__main__':
     load_experiment_settings('default')
