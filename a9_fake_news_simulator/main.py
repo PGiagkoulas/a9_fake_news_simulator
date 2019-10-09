@@ -1,4 +1,5 @@
 import sys
+import pandas as pd
 from cmd import Cmd
 
 # User defined Imports ugly python import syntax >:(
@@ -202,15 +203,21 @@ class MyPrompt(Cmd):
         if inp == 'x' or inp == 'q':
             return self.do_exit(inp)
         if inp == 'c' or inp == 'start':
-            network = environment.Environment(args['n_agents'], args['n_liars'], args['n_experts'],
-                                              args['n_connections'], args['cluster_distance'], args['n_news'], args['n_steps'],
-                                              args['communication_protocol'], args['conversation_protocol'])
-            print(network.clustering_coefficient())
-            network.run_simulation()
+            # initialize dataframe to keep the results of each run
+            run_results_df = pd.DataFrame()
+            for run in range(1, args['runs']+1):
+                network = environment.Environment(args['n_agents'], args['n_liars'], args['n_experts'],
+                                                  args['n_connections'], args['cluster_distance'], args['n_news'], args['n_steps'],
+                                                  args['communication_protocol'], args['conversation_protocol'])
+                # combine run results with existing ones
+                run_results_df = pd.concat([run_results_df, network.run_simulation()])
+            # print results dataframe on terminal
+            print(run_results_df)
         if inp == 'show_values':
             self.do_show_values()
         if inp == 'show_description':
             self.do_show_description()
+
 
 
 if __name__ == "__main__":

@@ -67,6 +67,7 @@ class Environment:
 
     # initialize connectivity matrix
     def _initialize_connectivity_matrix(self):
+        total_connections = self.num_connections
         connectivity_matrix = np.zeros((self.num_agents, self.num_agents), dtype=int)
         if self.cluster_distance == 0:
             for i in range(len(connectivity_matrix)):
@@ -75,9 +76,9 @@ class Environment:
                 while neighbour == i:
                     neighbour = np.random.randint(low=0, high=self.num_agents)
                 connectivity_matrix[neighbour, i] = 1
-                self.num_connections -= 1
+                total_connections -= 1
 
-            for number in range(self.num_connections):
+            for number in range(total_connections):
                 # randomly decide connection between 2 agents
                 pair = np.random.randint(low=0, high=self.num_agents, size=2)
                 # repeat until pair is not already connected
@@ -99,9 +100,9 @@ class Environment:
                 while neighbour == i:
                     neighbour = np.random.randint(low=0, high=self.num_agents)
                 connectivity_matrix[neighbour, i] = 1
-                self.num_connections -= 1
+                total_connections -= 1
 
-            for number in range(self.num_connections):
+            for number in range(total_connections):
                 # randomly decide connection between 2 agents based on the spacial distance
 
                 pair[0] = np.random.randint(low=0, high=self.num_agents, size=1)
@@ -286,17 +287,19 @@ class Environment:
         results = results.join(pd.DataFrame({"#steps": self.num_steps}, index=[0]))
         return results
 
-    # initiates the simulation
-    def run_simulation(self):
-        print(">> Initial configurations:")
-        self.simulations_stats()
-        print("<< Beginning simulation >>")
+    # runs the simulation
+    def run_simulation(self, verbose=False):
+        if verbose:  # prints only if explicitly stated
+            print(">> Initial configurations:")
+            self.simulations_stats()
+            print("<< Beginning simulation >>")
         for step in tqdm(range(self.num_steps)):
             self.run_communication_protocol()
             # print(self.output_measures(step))
-        print("<< END OF SIMULATION >>")
-        self.simulations_stats(printing=True)
-        print(self.output_measures())
+        if verbose:  # prints only if explicitly stated
+            print("<< END OF SIMULATION >>")
+            self.simulations_stats(printing=True)
+        return self.output_measures()
 
     # calculates distance
     def distance(self, xy1, xy2):
