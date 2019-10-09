@@ -287,17 +287,19 @@ class Environment:
         results = results.join(pd.DataFrame({"#steps": self.num_steps}, index=[0]))
         return results
 
-    # initiates the simulation
-    def run_simulation(self):
-        print(">> Initial configurations:")
-        self.simulations_stats()
-        print("<< Beginning simulation >>")
+    # runs the simulation
+    def run_simulation(self, verbose=False):
+        if verbose:  # prints only if explicitly stated
+            print(">> Initial configurations:")
+            self.simulations_stats()
+            print("<< Beginning simulation >>")
         for step in tqdm(range(self.num_steps)):
             self.run_communication_protocol()
             # print(self.output_measures(step))
-        print("<< END OF SIMULATION >>")
-        self.simulations_stats(printing=True)
-        print(self.output_measures())
+        if verbose:  # prints only if explicitly stated
+            print("<< END OF SIMULATION >>")
+            self.simulations_stats(printing=True)
+        return self.output_measures()
 
     # calculates distance
     def distance(self, xy1, xy2):
