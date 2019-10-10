@@ -269,37 +269,55 @@ class Environment:
 
     def output_measures(self, step=None):
         stats = self.simulations_stats()
-        results = pd.DataFrame({"#agents": self.num_agents}, index=[0])
         if step:
-            results = results.join(pd.DataFrame({"current step": step}, index=[0]))
-        results = results.join(pd.DataFrame({"#positives": stats[0]}, index=[0]))
-        results = results.join(pd.DataFrame({"#neutrals": stats[1]}, index=[0]))
-        results = results.join(pd.DataFrame({"#negatives": stats[2]}, index=[0]))
-        results = results.join(pd.DataFrame({"#experts": self.num_experts}, index=[0]))
-        results = results.join(pd.DataFrame({"#liars": self.num_liars}, index=[0]))
-        results = results.join(pd.DataFrame({"#initial_connections": self.num_connections}, index=[0]))
-        results = results.join(pd.DataFrame({"#news": self.num_news}, index=[0]))
-        results = results.join(pd.DataFrame({"#cluster distance": self.cluster_distance}, index=[0]))
-        results = results.join(pd.DataFrame({"#comm_protocol": self.communication_protocol}, index=[0]))
-        results = results.join(pd.DataFrame({"#conv_protocol": self.conversation_protocol}, index=[0]))
-
-        # if we change stop condition this needs to change:
-        results = results.join(pd.DataFrame({"#steps": self.num_steps}, index=[0]))
-        return results
+            results = {"#agents": [self.num_agents],
+                       "current step": [step],
+                       "#positives": [stats[0]],
+                       "#neutrals": [stats[1]],
+                       "#negatives": stats[2],
+                       "#experts": self.num_experts,
+                       "#liars": self.num_liars,
+                       "#initial_connections": self.num_connections,
+                       "#news": self.num_news,
+                       "#cluster distance": self.cluster_distance,
+                       "#comm_protocol": self.communication_protocol,
+                       "#conv_protocol": self.conversation_protocol,
+                       "#steps": self.num_steps
+                       }
+        else:
+            results = {"#agents": [self.num_agents],
+                       "#positives": [stats[0]],
+                       "#neutrals": [stats[1]],
+                       "#negatives": stats[2],
+                       "#experts": self.num_experts,
+                       "#liars": self.num_liars,
+                       "#initial_connections": self.num_connections,
+                       "#news": self.num_news,
+                       "#cluster distance": self.cluster_distance,
+                       "#comm_protocol": self.communication_protocol,
+                       "#conv_protocol": self.conversation_protocol,
+                       "#steps": self.num_steps
+                       }
+        return pd.DataFrame(results)
 
     # runs the simulation
-    def run_simulation(self, verbose=False):
+    def run_simulation(self, verbose=False, stepwise=False):
+        run_results_df = pd.DataFrame()
         if verbose:  # prints only if explicitly stated
             print(">> Initial configurations:")
             self.simulations_stats()
             print("<< Beginning simulation >>")
-        for step in tqdm(range(self.num_steps)):
+        for step in tqdm(range(1, self.num_steps + 1)):
             self.run_communication_protocol()
-            # print(self.output_measures(step))
+            if stepwise:
+                run_results_df = pd.concat([run_results_df, self.output_measures(step)])
         if verbose:  # prints only if explicitly stated
             print("<< END OF SIMULATION >>")
             self.simulations_stats(printing=True)
-        return self.output_measures()
+        if stepwise:
+            return run_results_df
+        else:
+            return self.output_measures()
 
     # calculates distance
     def distance(self, xy1, xy2):

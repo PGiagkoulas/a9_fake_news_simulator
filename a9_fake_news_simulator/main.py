@@ -218,7 +218,16 @@ class MyPrompt(Cmd):
             self.do_show_values()
         if inp == 'show_description':
             self.do_show_description()
+        if inp == 'run_stepwise':
+            self.run_stepwise()
 
+    def run_stepwise(self):
+        network = environment.Environment(args['n_agents'], args['n_liars'], args['n_experts'],
+                                          args['n_connections'], args['cluster_distance'], args['n_news'],
+                                          args['n_steps'],
+                                          args['communication_protocol'], args['conversation_protocol'])
+        # export results dataframe
+        io_utils.export_results(network.run_simulation(stepwise=True))
 
 
 if __name__ == "__main__":

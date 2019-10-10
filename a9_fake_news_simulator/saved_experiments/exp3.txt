@@ -6,5 +6,5 @@ cluster_distance 0
 n_news 1
 n_steps 1500
 communication_protocol random
-conversation_protocol discussion
+conversation_protocol simple
 runs 100
