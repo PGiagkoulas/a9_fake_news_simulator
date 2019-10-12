@@ -33,6 +33,7 @@ class Environment:
                  cluster_distance,
                  num_news,
                  num_steps,
+		 connectivity_type,
                  communication_protocol="random",
                  conversation_protocol="discussion"):
         self.num_agents = num_agents
@@ -40,7 +41,7 @@ class Environment:
         self.num_experts = num_experts
         self.num_connections = num_connections
         self.cluster_distance = cluster_distance
-	self.connectivity = "sun"
+	self.connectivity = connectivity_type
         self.num_news = num_news
         self.num_steps = num_steps
         self.agent_list = self._generate_agents()
@@ -73,7 +74,7 @@ class Environment:
     # initialize connectivity matrix
     def _initialize_connectivity_matrix(self):
         connectivity_matrix = np.zeros((self.num_agents, self.num_agents), dtype=int)
-        if self.connectivity == "cluster":
+        if self.connectivity == "cluster" or self.connectivity == "random":
 	    if self.cluster_distance == 0:
 		return self.init_random(connectivity_matrix)
 

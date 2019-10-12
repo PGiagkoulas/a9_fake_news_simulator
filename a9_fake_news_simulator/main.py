@@ -26,6 +26,7 @@ class MyPrompt(Cmd):
     cluster_distance: 0
     n_news: 1 
     n_steps: 50 
+    connectivity_type: 'random'
     communication_protocol: 'random'
     conversation_protocol: 'discussion' \n
     If you want to start the simulation with these values enter 'start'. 
@@ -131,8 +132,9 @@ class MyPrompt(Cmd):
            cluster_distance: {4}
            n_news: {5}
            n_steps: {6} 
-           communication_protocol: {7}
-           conversation_protocol: {8}
+           connectivity_type: {7}
+           communication_protocol: {8}
+           conversation_protocol: {9}
            """
         print(text.format(args['n_agents'],
                       args['n_liars'],
@@ -141,6 +143,7 @@ class MyPrompt(Cmd):
                       args['cluster_distance'],
                       args['n_news'],
                       args['n_steps'],
+                      args['connectivity_type'],
                       args['communication_protocol'],
                       args['conversation_protocol']))
 
@@ -153,6 +156,14 @@ class MyPrompt(Cmd):
            """
         # todo: write better description
         print(text)
+    
+    def do_connectivity_type(self, inp):
+        '''The type that determines how connections are initialised between the agents.'''
+        if inp != "random" and inp != "cluster" and inp != "sun" and inp != "circle":
+            print("You can only pick from the following options:  ['random', 'cluster', 'sun', 'circle'] ")
+        else:
+            args['connectivity_type'] = inp
+            print("Setting connectivity_type to '{}'".format(inp))
 
     def do_communication_protocol(self, inp):
         '''The protocol that determines how agent choose to call other agents.
@@ -220,7 +231,7 @@ class MyPrompt(Cmd):
                 print("-Run {0}/{1}".format(run, args['runs']))
                 network = environment.Environment(args['n_agents'], args['n_liars'], args['n_experts'],
                                                   args['n_connections'], args['cluster_distance'], args['n_news'], args['n_steps'],
-                                                  args['communication_protocol'], args['conversation_protocol'])
+                                                  args['connectivity_type'], args['communication_protocol'], args['conversation_protocol'])
                 # combine run results with existing ones
                 run_results_df = pd.concat([run_results_df, network.run_simulation()])
             # export results dataframe
@@ -235,7 +246,7 @@ class MyPrompt(Cmd):
     def run_stepwise(self):
         network = environment.Environment(args['n_agents'], args['n_liars'], args['n_experts'],
                                           args['n_connections'], args['cluster_distance'], args['n_news'],
-                                          args['n_steps'],
+                                          args['n_steps'], args['connectivity_type'],
                                           args['communication_protocol'], args['conversation_protocol'])
         # export results dataframe
         io_utils.export_results(network.run_simulation(stepwise=True))
