@@ -70,14 +70,6 @@ class Environment:
         total_connections = self.num_connections
         connectivity_matrix = np.zeros((self.num_agents, self.num_agents), dtype=int)
         if self.cluster_distance == 0:
-            for i in range(len(connectivity_matrix)):
-                # guarantee that every agent is in at least one phonebook by someone else
-                neighbour = i
-                while neighbour == i:
-                    neighbour = np.random.randint(low=0, high=self.num_agents)
-                connectivity_matrix[neighbour, i] = 1
-                total_connections -= 1
-
             for number in range(total_connections):
                 # randomly decide connection between 2 agents
                 pair = np.random.randint(low=0, high=self.num_agents, size=2)
@@ -94,35 +86,40 @@ class Environment:
             for i in range(self.num_agents):
                 list_of_xy.append((np.random.randint(low=0, high=100), np.random.randint(low=0, high=100)))
 
-            for i in range(len(connectivity_matrix)):
-                # guarantee that every agent is in at least one phonebook by someone else
-                neighbour = i
-                while neighbour == i:
-                    neighbour = np.random.randint(low=0, high=self.num_agents)
-                connectivity_matrix[neighbour, i] = 1
-                total_connections -= 1
-
-            for number in range(total_connections):
-                # randomly decide connection between 2 agents based on the spacial distance
-
-                pair[0] = np.random.randint(low=0, high=self.num_agents, size=1)
-                pair[1] = pair[0]
-                chance = None
+            
+            for number in range(self.num_connections):
+                print("cluster the stuff!!!!!")
+                pair = np.random.randint(low=0, high=self.num_agents, size=1).tolist()
+                pair.append(pair[0])
+                chance = [0] * self.num_agents
 
                 # repeat until pair is not already connected
-                while connectivity_matrix[pair[0], pair[1]] == 1:
-                    for connection in range(len(connectivity_matrix[selected])):
-                        chance[connection] = math.exp(
-                            - 1 * self.cluster_distance * distance(list_of_xy[selected], list_of_xy[connection]))
+                while connectivity_matrix[pair[0]][pair[1]] == 1 or pair[0] == pair[1] :
+                    for connection in range(len(connectivity_matrix[pair[0]])):
+                        if connectivity_matrix[pair[0]][connection] == 1 :
+                            chance[connection] = 0
+                        else:
+                            dist = self.distance(list_of_xy[pair[0]], list_of_xy[connection])
+                            chance[connection] = math.exp(
+                                - 1 * self.cluster_distance * dist)
+
                     # calculation of chance of connection based on relative distance
+                    chance[pair[0]] = 0
+                    if sum(chance) == 0: #no possible connections left
+                        pair = np.random.randint(low=0, high=self.num_agents, size=1).tolist()
+                        pair.append(pair[0])
+                    else:
+                        elected = np.random.uniform(0, sum(chance))
+                        compare = 0
+                        #print(chance)
+                        #print(sum(chance))
+                        #print(elected)
 
-                    elect = np.random.randfloat(0, sum(chance))
-                    compare = 0
-
-                    for connection in range(len(connectivity_matrix[selected])):
-                        compare += chance[connection]
-                        if elected <= compare:
-                            pair[1] = connection
+                        for connection in range(len(connectivity_matrix[pair[0]])):
+                            compare += chance[connection]
+                            if elected <= compare:
+                                pair[1] = connection
+                                break
 
                 # update matrix
                 connectivity_matrix[pair[0], pair[1]] = 1
@@ -331,11 +328,15 @@ class Environment:
         for i in range(self.num_agents):
             for j in range(len(self.connectivity_matrix[i])):
                 if self.connectivity_matrix[i][j] == 1:
+            #note down the neighbours of agent i
                     temp_neighbours.append(self.connectivity_matrix[i][j])
             for n in temp_neighbours:
+                print(n)
                 # for each neighbour, check whether their neighbours are also connected (receivers) of the original agent
                 for nj in range(len(self.connectivity_matrix[n])):
                     if self.connectivity_matrix[i][nj] == 1:
                         neighbour_connections += 1
+                #get the total possible connections between the neighbours of agent i
                 total_possible_connections += len(temp_neighbours) - 1
+        #return the coefficient
         return neighbour_connections / total_possible_connections / self.num_agents
