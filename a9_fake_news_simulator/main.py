@@ -177,8 +177,19 @@ class MyPrompt(Cmd):
             print("Setting conversation_protocol to '{}'".format(inp))
 
     def do_cluster_distance(self, inp):
-        ''' Daniel, please add explanation here'''
-        # todo: add explanation
+        '''The clustering method assumes that actors are located in physical space and are embedded in 
+        a social network structure that is affected by the spatial distances between them. 
+        Each agent randomly got assigned a position on a 2d plane. 
+        By random an agent is selected to pick an agent to connect to. 
+        The connections are one-way directional from the first agent to the second. 
+        The chance of a connection to the second agent, is given by: 
+        exp( - 1 * cluster_distance * distance(sender, receiver))
+        
+		Where y is a parameter determining the slope of the chance falloff per distance, 
+		and thus by consequence determining the size of the clusters. 
+		When clustering_distance = 0, the network has a random structure that is not associated with 
+		spatial distances between the actors and that does not show any clustering. 
+		Increasing clustering_distance reduces the average distance that ties cover.'''
         try:
             inp = int(inp)
             if inp >= 0:
