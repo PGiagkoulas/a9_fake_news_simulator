@@ -5,6 +5,7 @@ n_connections 200
 cluster_distance 0
 n_news 1
 n_steps 1500
+connectivity_type random
 communication_protocol CO
 conversation_protocol simple
 runs 100

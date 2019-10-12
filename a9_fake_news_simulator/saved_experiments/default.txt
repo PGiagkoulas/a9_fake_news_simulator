@@ -5,6 +5,7 @@ n_connections 10
 cluster_distance 0
 n_news 1
 n_steps 50
+connectivity_type random
 communication_protocol random
 conversation_protocol discussion
 runs 100
