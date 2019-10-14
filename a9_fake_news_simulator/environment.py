@@ -33,7 +33,7 @@ class Environment:
                  cluster_distance,
                  num_news,
                  num_steps,
-		 connectivity_type,
+                 connectivity_type,
                  communication_protocol="random",
                  conversation_protocol="discussion"):
         self.num_agents = num_agents
@@ -41,7 +41,7 @@ class Environment:
         self.num_experts = num_experts
         self.num_connections = num_connections
         self.cluster_distance = cluster_distance
-	self.connectivity = connectivity_type
+        self.connectivity = connectivity_type
         self.num_news = num_news
         self.num_steps = num_steps
         self.agent_list = self._generate_agents()
@@ -68,106 +68,99 @@ class Environment:
             list_of_agents[a].scepticism = 1
         return list_of_agents
 
-
-
-
     # initialize connectivity matrix
     def _initialize_connectivity_matrix(self):
         connectivity_matrix = np.zeros((self.num_agents, self.num_agents), dtype=int)
         if self.connectivity == "cluster" or self.connectivity == "random":
-	    if self.cluster_distance == 0:
-		return self.init_random(connectivity_matrix)
+            if self.cluster_distance == 0:
+                return self.init_random(connectivity_matrix)
 
-	    else:
-		return self.init_cluster(connectivity_matrix)
-	if self.connectivity == "sun":
-	    return  self.init_sungraph(connectivity_matrix)
-	if self.connectivity == "circle":
-	    return  self.init_circlegraph(connectivity_matrix)
-    
-    
+            else:
+                return self.init_cluster(connectivity_matrix)
+        if self.connectivity == "sun":
+            return self.init_sungraph(connectivity_matrix)
+        if self.connectivity == "circle":
+            return self.init_circlegraph(connectivity_matrix)
+
     ## The different methods for connectivity
-    
+
     def init_random(self, connectivity_matrix):
-	for number in range(self.num_connections):
-	    # randomly decide connection between 2 agents
-	    pair = np.random.randint(low=0, high=self.num_agents, size=2)
-	    # repeat until pair is not already connected
-	    while connectivity_matrix[pair[0], pair[1]] == 1:
-		pair = np.random.randint(low=0, high=self.num_agents, size=2)
-	    # update matrix
-	    connectivity_matrix[pair[0], pair[1]] = 1
-	return connectivity_matrix
-	
+        for number in range(self.num_connections):
+            # randomly decide connection between 2 agents
+            pair = np.random.randint(low=0, high=self.num_agents, size=2)
+            # repeat until pair is not already connected
+            while connectivity_matrix[pair[0], pair[1]] == 1:
+                pair = np.random.randint(low=0, high=self.num_agents, size=2)
+            # update matrix
+            connectivity_matrix[pair[0], pair[1]] = 1
+        return connectivity_matrix
+
     def init_cluster(self, connectivity_matrix):
-	# assign for every agent a x and y position value
-	list_of_xy = []
-	for i in range(self.num_agents):
-	    list_of_xy.append((np.random.randint(low=0, high=100), np.random.randint(low=0, high=100)))
+        # assign for every agent a x and y position value
+        list_of_xy = []
+        for i in range(self.num_agents):
+            list_of_xy.append((np.random.randint(low=0, high=100), np.random.randint(low=0, high=100)))
 
-	
-	for number in range(self.num_connections):
-	    pair = np.random.randint(low=0, high=self.num_agents, size=1).tolist()
-	    pair.append(pair[0])
-	    chance = [0] * self.num_agents
+        for number in range(self.num_connections):
+            pair = np.random.randint(low=0, high=self.num_agents, size=1).tolist()
+            pair.append(pair[0])
+            chance = [0] * self.num_agents
 
-	    # repeat until pair is not already connected
-	    while connectivity_matrix[pair[0]][pair[1]] == 1 or pair[0] == pair[1] :
-		for connection in range(len(connectivity_matrix[pair[0]])):
-		    if connectivity_matrix[pair[0]][connection] == 1 :
-			chance[connection] = 0
-		    else:
-			dist = self.distance(list_of_xy[pair[0]], list_of_xy[connection])
-			chance[connection] = math.exp(
-			    - 1 * self.cluster_distance * dist)
+            # repeat until pair is not already connected
+            while connectivity_matrix[pair[0]][pair[1]] == 1 or pair[0] == pair[1]:
+                for connection in range(len(connectivity_matrix[pair[0]])):
+                    if connectivity_matrix[pair[0]][connection] == 1:
+                        chance[connection] = 0
+                    else:
+                        dist = self.distance(list_of_xy[pair[0]], list_of_xy[connection])
+                        chance[connection] = math.exp(
+                            - 1 * self.cluster_distance * dist)
 
-		# calculation of chance of connection based on relative distance
-		chance[pair[0]] = 0
-		if sum(chance) == 0: #no possible connections left
-		    pair = np.random.randint(low=0, high=self.num_agents, size=1).tolist()
-		    pair.append(pair[0])
-		else:
-		    elected = np.random.uniform(0, sum(chance))
-		    compare = 0
-		    #print(chance)
-		    #print(sum(chance))
-		    #print(elected)
+                # calculation of chance of connection based on relative distance
+                chance[pair[0]] = 0
+                if sum(chance) == 0:  # no possible connections left
+                    pair = np.random.randint(low=0, high=self.num_agents, size=1).tolist()
+                    pair.append(pair[0])
+                else:
+                    elected = np.random.uniform(0, sum(chance))
+                    compare = 0
+                    # print(chance)
+                    # print(sum(chance))
+                    # print(elected)
 
-		    for connection in range(len(connectivity_matrix[pair[0]])):
-			compare += chance[connection]
-			if elected <= compare:
-			    pair[1] = connection
-			    break
+                    for connection in range(len(connectivity_matrix[pair[0]])):
+                        compare += chance[connection]
+                        if elected <= compare:
+                            pair[1] = connection
+                            break
 
-	    # update matrix
-	    connectivity_matrix[pair[0], pair[1]] = 1
+            # update matrix
+            connectivity_matrix[pair[0], pair[1]] = 1
 
-	return connectivity_matrix
-	
+        return connectivity_matrix
+
     def init_sungraph(self, connectivity_matrix):
-	if (self.num_agents % 2) == 1:
-	    print("warning uneven amount of agents for sun graph, removing 1")
-	    self.num_agents -= 1
-	
-	for i in range(self.num_agents/2):
-	    #put half of the agents into circle formation
-	    if i+1 < self.num_agents/2:
-		connectivity_matrix[i][i+1] = 1
-	    else:
-		connectivity_matrix[i][0] = 1
-	    #set the other half to be connected to 1 unique node each of the circle
-	    connectivity_matrix[self.num_agents/2+i][i] = 1
-	return connectivity_matrix
-	
-	
+        if (self.num_agents % 2) == 1:
+            print("warning uneven amount of agents for sun graph, removing 1")
+            self.num_agents -= 1
+
+        for i in range(self.num_agents / 2):
+            # put half of the agents into circle formation
+            if i + 1 < self.num_agents / 2:
+                connectivity_matrix[i][i + 1] = 1
+            else:
+                connectivity_matrix[i][0] = 1
+            # set the other half to be connected to 1 unique node each of the circle
+            connectivity_matrix[self.num_agents / 2 + i][i] = 1
+        return connectivity_matrix
+
     def init_circlegraph(self, connectivity_matrix):
-	for i in range(self.num_agents):
-	    if i+1 < self.num_agents:
-		connectivity_matrix[i][i+1] = 1
-	    else:
-		connectivity_matrix[i][0] = 1
-	return connectivity_matrix
-	
+        for i in range(self.num_agents):
+            if i + 1 < self.num_agents:
+                connectivity_matrix[i][i + 1] = 1
+            else:
+                connectivity_matrix[i][0] = 1
+        return connectivity_matrix
 
     # conversation protocol
     def agent_conversation(self, agent_a, agent_b):
@@ -371,7 +364,7 @@ class Environment:
         for i in range(self.num_agents):
             for j in range(len(self.connectivity_matrix[i])):
                 if self.connectivity_matrix[i][j] == 1:
-            #note down the neighbours of agent i
+                    # note down the neighbours of agent i
                     temp_neighbours.append(self.connectivity_matrix[i][j])
             for n in temp_neighbours:
                 print(n)
@@ -379,7 +372,7 @@ class Environment:
                 for nj in range(len(self.connectivity_matrix[n])):
                     if self.connectivity_matrix[i][nj] == 1:
                         neighbour_connections += 1
-                #get the total possible connections between the neighbours of agent i
+                # get the total possible connections between the neighbours of agent i
                 total_possible_connections += len(temp_neighbours) - 1
-        #return the coefficient
+        # return the coefficient
         return neighbour_connections / total_possible_connections / self.num_agents
