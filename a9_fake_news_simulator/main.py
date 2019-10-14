@@ -137,15 +137,15 @@ class MyPrompt(Cmd):
            conversation_protocol: {9}
            """
         print(text.format(args['n_agents'],
-                      args['n_liars'],
-                      args['n_experts'],
-                      args['n_connections'],
-                      args['cluster_distance'],
-                      args['n_news'],
-                      args['n_steps'],
-                      args['connectivity_type'],
-                      args['communication_protocol'],
-                      args['conversation_protocol']))
+                          args['n_liars'],
+                          args['n_experts'],
+                          args['n_connections'],
+                          args['cluster_distance'],
+                          args['n_news'],
+                          args['n_steps'],
+                          args['connectivity_type'],
+                          args['communication_protocol'],
+                          args['conversation_protocol']))
 
     def do_show_description(self, inp):
         '''Shows a description of the program and how the simulation works'''
@@ -156,7 +156,7 @@ class MyPrompt(Cmd):
            """
         # todo: write better description
         print(text)
-    
+
     def do_connectivity_type(self, inp):
         '''The type that determines how connections are initialised between the agents.'''
         if inp != "random" and inp != "cluster" and inp != "sun" and inp != "circle":
@@ -168,8 +168,8 @@ class MyPrompt(Cmd):
     def do_communication_protocol(self, inp):
         '''The protocol that determines how agent choose to call other agents.
         random: a random agent is picked from the phonebook.'''
-        if inp != "random" and inp != "SYO" and inp != "CO":
-            print("You can only pick from the following options:  ['random', 'SYO', 'CO'] ")
+        if inp != "random" and inp != "SYO" and inp != "CO" and inp != "LNS":
+            print("You can only pick from the following options:  ['random', 'SYO', 'CO', 'LNS'] ")
         else:
             args['communication_protocol'] = inp
             print("Setting communication_protocol to '{}'".format(inp))
@@ -227,11 +227,13 @@ class MyPrompt(Cmd):
         if inp == 'c' or inp == 'start':
             # initialize dataframe to keep the results of each run
             run_results_df = pd.DataFrame()
-            for run in range(1, args['runs']+1):
+            for run in range(1, args['runs'] + 1):
                 print("-Run {0}/{1}".format(run, args['runs']))
                 network = environment.Environment(args['n_agents'], args['n_liars'], args['n_experts'],
-                                                  args['n_connections'], args['cluster_distance'], args['n_news'], args['n_steps'],
-                                                  args['connectivity_type'], args['communication_protocol'], args['conversation_protocol'])
+                                                  args['n_connections'], args['cluster_distance'], args['n_news'],
+                                                  args['n_steps'],
+                                                  args['connectivity_type'], args['communication_protocol'],
+                                                  args['conversation_protocol'])
                 # combine run results with existing ones
                 run_results_df = pd.concat([run_results_df, network.run_simulation()])
             # export results dataframe

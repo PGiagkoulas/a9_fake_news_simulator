@@ -182,9 +182,9 @@ class Environment:
                     agent_b.evaluate_opinion(agent_a.opinion)
                 elif winner == 2:
                     agent_a.evaluate_opinion(agent_b.opinion)
-                # after evaluation, the opinion bases are updated
-                agent_b.opinion_base[self.agent_list.index(agent_a)] = agent_a.opinion
-                agent_a.opinion_base[self.agent_list.index(agent_b)] = agent_b.opinion
+            # after evaluation, the opinion bases are updated
+            agent_b.opinion_base[self.agent_list.index(agent_a)] = agent_a.opinion
+            agent_a.opinion_base[self.agent_list.index(agent_b)] = agent_b.opinion
         elif self.conversation_protocol == "majority_opinion":
             # agent_a is the sender and agent_b the receiver
             # neutral opinions don't spread
@@ -289,6 +289,24 @@ class Environment:
             # after every conversation the opinion base is updated so can just check against None
             valid_contacts = [contact for contact in sender_phonebook if
                               sender.opinion_base[contact] is None]
+            if not valid_contacts:
+                return
+            receiver_index = valid_contacts[random.randint(0, len(valid_contacts) - 1)]  # randint is inclusive
+            receiver = self.agent_list[receiver_index]
+            self.agent_conversation(sender, receiver)
+        elif self.communication_protocol == "LNS":
+            sender_index = self.choose_random_sender()
+            sender = self.agent_list[sender_index]
+            # choose receiver
+            # getting sender's connections
+            sender_connectivity = self.connectivity_matrix[sender_index, :]
+            # getting ids of possible receivers
+            sender_phonebook = [index for index in range(0, self.num_agents)
+                                if (sender_connectivity[index] != 0 and index != sender_index)]
+            # only select those contacts that you never had a conversation with
+            # or if you know that they have a neutral opinion
+            valid_contacts = [contact for contact in sender_phonebook if
+                              sender.opinion_base[contact] is None or sender.opinion_base[contact] == 0]
             if not valid_contacts:
                 return
             receiver_index = valid_contacts[random.randint(0, len(valid_contacts) - 1)]  # randint is inclusive
