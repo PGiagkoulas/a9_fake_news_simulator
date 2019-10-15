@@ -23,6 +23,7 @@ class MyPrompt(Cmd):
     n_liars: 1 
     n_experts: 1  
     n_connections: 10 
+    connection_density: off (optional)
     cluster_distance: 0
     n_news: 1 
     n_steps: 50 
@@ -96,7 +97,22 @@ class MyPrompt(Cmd):
                 raise ValueError
         except:
             print("Wrong input type, please enter an integer larger than 0")
-
+    
+    def do_connection_density(self, inp):
+        '''Change the number of connections relative to number of agents. Must be an float inbetween 0 and 1'''
+        try:
+            inp = float(inp)
+            if inp < 0 or inp > 1 :
+                print("Density value has to be or be in between 0 and 1")
+            elif inp > 0:
+                args['n_connections'] = int(args['n_agents'] * (args['n_agents']-1) * inp) # all possible connections * density = number of connections
+                print("Using density value of '{}'".format(inp))
+                print("Setting number of connections to '{}'".format(args['n_connections']))
+            else:
+                raise ValueError
+        except:
+            print("Wrong input type, please enter an float larger than 0")
+            
     def do_n_news(self, inp):
         '''Change the number of news. Must be an integer larger than 0'''
         try:
@@ -196,11 +212,11 @@ class MyPrompt(Cmd):
         The chance of a connection to the second agent, is given by: 
         exp( - 1 * cluster_distance * distance(sender, receiver))
         
-		Where y is a parameter determining the slope of the chance falloff per distance, 
-		and thus by consequence determining the size of the clusters. 
-		When clustering_distance = 0, the network has a random structure that is not associated with 
-		spatial distances between the actors and that does not show any clustering. 
-		Increasing clustering_distance reduces the average distance that ties cover.'''
+        Where y is a parameter determining the slope of the chance falloff per distance, 
+        and thus by consequence determining the size of the clusters. 
+        When clustering_distance = 0, the network has a random structure that is not associated with 
+        spatial distances between the actors and that does not show any clustering. 
+        Increasing clustering_distance reduces the average distance that ties cover.'''
         try:
             inp = int(inp)
             if inp >= 0:
