@@ -55,7 +55,12 @@ class Environment:
         for number in range(self.num_agents):
             # agents are initially generated neutral and
             # their scepticism follows a normal distribution around the average scepticism level
-            list_of_agents.append(agent.Agent(0, random.gauss(0.5, 0.1), self.num_agents))
+            list_of_agents.append(agent.Agent(opinion=0,
+                                              scepticism=random.gauss(0.5, 0.1),
+                                              num_agents=self.num_agents,
+                                              id=number,
+                                              persuasiveness=random.gauss(0.5, 0.1)))
+
         # assign opinions to agents
         agent_indexes = random.sample(range(len(list_of_agents)), k=self.num_liars + self.num_experts)
         # declare liars & experts
@@ -66,6 +71,7 @@ class Environment:
         for a in agent_indexes[self.num_liars:]:
             list_of_agents[a].opinion = 1
             list_of_agents[a].scepticism = 1
+            list_of_agents[a].expert = True
         return list_of_agents
 
     # initialize connectivity matrix

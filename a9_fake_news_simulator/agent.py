@@ -7,14 +7,19 @@ class Agent:
     opinion = None  # the current belief of the agent (-1: false, 0:neutral, 1: true) (can become a list later for multiple news)
     opinion_base = {}  # The opinions that the agent heard from other persons
     scepticism = None  # percent chance to change opinion when receives a different opinion
+    id = None
+    persuasiveness = 0.5
+    expert = False
 
     # initializer
-    def __init__(self, opinion, scepticism, num_agents):
+    def __init__(self, opinion, scepticism, num_agents, id, persuasiveness, expert=False):
         self.scepticism = scepticism
         self.opinion = opinion
         # the agent initially thinks every other agent is neutral until they get called by them
         self.opinion_base = {key: None for key in range(num_agents)}
-
+        self.id = id
+        self.persuasiveness = persuasiveness
+        self.expert = expert
     # evaluate new opinion from discussion
     def evaluate_opinion(self, new_opinion):
         # accept or not
