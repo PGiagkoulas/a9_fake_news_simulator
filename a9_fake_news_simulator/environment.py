@@ -150,14 +150,14 @@ class Environment:
             print("warning uneven amount of agents for sun graph, removing 1")
             self.num_agents -= 1
 
-        for i in range(self.num_agents / 2):
+        for i in range(int(self.num_agents / 2)):
             # put half of the agents into circle formation
             if i + 1 < self.num_agents / 2:
                 connectivity_matrix[i][i + 1] = 1
             else:
                 connectivity_matrix[i][0] = 1
             # set the other half to be connected to 1 unique node each of the circle
-            connectivity_matrix[self.num_agents / 2 + i][i] = 1
+            connectivity_matrix[int(self.num_agents / 2 + i)][i] = 1
         return connectivity_matrix
 
     def init_circlegraph(self, connectivity_matrix):
