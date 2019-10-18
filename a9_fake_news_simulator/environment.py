@@ -362,6 +362,7 @@ class Environment:
 
     # runs the simulation
     def run_simulation(self, verbose=False, stepwise=False):
+        final_step = 0
         run_results_df = pd.DataFrame()
         if verbose:  # prints only if explicitly stated
             print(">> Initial configurations:")
@@ -369,6 +370,7 @@ class Environment:
             print("<< Beginning simulation >>")
         for step in tqdm(range(1, self.num_steps + 1)):
             if self.converged():
+                final_step = step
                 break
             self.run_communication_protocol()
             if stepwise:
@@ -379,7 +381,7 @@ class Environment:
         if stepwise:
             return run_results_df
         else:
-            return self.output_measures()
+            return self.output_measures(step=final_step)
 
     # calculates distance
     def distance(self, xy1, xy2):
