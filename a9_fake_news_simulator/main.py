@@ -45,8 +45,13 @@ class MyPrompt(Cmd):
         try:
             inp = int(inp)
             if inp > args['n_connections']:
-                print("Number of agents must be at most the number of connections so that each agent has at least "
-                      "one incoming connection")
+                args['n_agents'] = inp
+                args['n_connections'] = inp
+                print("Setting number of agents to '{}'".format(inp))
+                print("Number of connection too low for {0} of agents. Setting number of connections to '{1}'"
+                      .format(inp, inp))
+                # print("Number of agents must be at most the number of connections so that each agent has at least "
+                #       "one incoming connection")
             elif inp > 0:
                 args['n_agents'] = inp
                 print("Setting number of agents to '{}'".format(inp))
