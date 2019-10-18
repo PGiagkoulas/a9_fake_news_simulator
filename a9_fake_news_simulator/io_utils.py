@@ -2,7 +2,7 @@ import os
 
 RELATIVE_PATH = os.path.dirname(__file__)
 EXPERIMENTS_PATH = os.path.join(RELATIVE_PATH, './saved_experiments/')
-RESULTS_PATH = os.path.join(RELATIVE_PATH, 'results\\')
+RESULTS_PATH = os.path.join(RELATIVE_PATH, './results/')
 
 
 # helper function checks existence of given experiment name
