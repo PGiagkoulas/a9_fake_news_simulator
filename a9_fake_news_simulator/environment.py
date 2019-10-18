@@ -23,6 +23,7 @@ class Environment:
     communication_protocol = None  # determines how agents choose whom to call
     conversation_protocol = None  # determines how a conversation takes place and how agents change their opinion
     connectivity = None
+    n_isolates = None  # number of isolated agents in the network, after initialization
 
     # initializer
     def __init__(self,
@@ -46,6 +47,8 @@ class Environment:
         self.num_steps = num_steps
         self.agent_list = self._generate_agents()
         self.connectivity_matrix = self._initialize_connectivity_matrix()
+        # detect isolated agents and make them convinced
+        self.n_isolates = self.convince_isolates()
         self.communication_protocol = communication_protocol
         self.conversation_protocol = conversation_protocol
 
@@ -243,6 +246,9 @@ class Environment:
         # update connectivity matrix
         self.connectivity_matrix[index_a, :] = union_phonebook
         self.connectivity_matrix[index_b, :] = union_phonebook
+        # agents get each other's contact
+        self.connectivity_matrix[index_a, index_b] = 1
+        self.connectivity_matrix[index_b, index_a] = 1
         # make certain no connection is made from the agents to themselves
         self.connectivity_matrix[index_a, index_a] = 0
         self.connectivity_matrix[index_b, index_b] = 0
@@ -335,6 +341,7 @@ class Environment:
                        "#positives": [stats[0]],
                        "#neutrals": [stats[1]],
                        "#negatives": stats[2],
+                       "#isolates": self.n_isolates,
                        "#experts": self.num_experts,
                        "#liars": self.num_liars,
                        "#initial_connections": self.num_connections,
@@ -349,6 +356,7 @@ class Environment:
                        "#positives": [stats[0]],
                        "#neutrals": [stats[1]],
                        "#negatives": stats[2],
+                       "#isolates": self.n_isolates,
                        "#experts": self.num_experts,
                        "#liars": self.num_liars,
                        "#initial_connections": self.num_connections,
@@ -422,3 +430,15 @@ class Environment:
             return True
         else:
             return False
+
+    # detects all isolated agents and sets their convinced flag to 1, since they will never have an option of
+    # changing opinion + returns the number of isolates in the network
+    def convince_isolates(self):
+        isolates = 0
+        for index in range(self.num_agents):
+            outgoing = self.connectivity_matrix[index, :]
+            incoming = self.connectivity_matrix[:, index]
+            if all([inc == 0 for inc in incoming]) and all([out == 0 for out in outgoing]):
+                self.agent_list[index].convinced = 1
+                isolates += 1
+        return isolates
