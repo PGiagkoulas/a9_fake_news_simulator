@@ -32,6 +32,7 @@ class MyPrompt(Cmd):
     conversation_protocol: 'discussion' \n
     If you want to start the simulation with these values enter 'start'. 
     Otherwise change values by entering '{parameter} {value}' and then enter 'start'.
+    If you have prepared an experiment script, you can load its parameters by entering 'load_experiment {file_name}'
     Enter '?' for an overview over all commands.
     """
 
@@ -44,9 +45,14 @@ class MyPrompt(Cmd):
         '''Change the number of agents. Must be an integer larger than 0'''
         try:
             inp = int(inp)
-            if inp > args['n_connections']:
-                print("Number of agents must be at most the number of connections so that each agent has at least "
-                      "one incoming connection")
+            # if the maximum number of connections for the new number of agents is lower than the existing number of connections
+            if (inp * (inp - 1)) < (args['n_agents'] * (args['n_agents'] - 1)):
+                args['n_agents'] = inp
+                # make number of connections, the maximum you can have with the new number of agents
+                args['n_connections'] = args['n_agents'] * (args['n_agents'] - 1)
+                print("Setting number of agents to '{}'".format(inp))
+                print("Number of connection too high for {0} agents. Setting number of connections to maximum: '{1}'"
+                      .format(args['n_agents'], args['n_connections']))
             elif inp > 0:
                 args['n_agents'] = inp
                 print("Setting number of agents to '{}'".format(inp))
@@ -87,23 +93,24 @@ class MyPrompt(Cmd):
         '''Change the number of connections. Must be an integer larger than 0'''
         try:
             inp = int(inp)
-            if inp < args['n_agents']:
-                print("Number of connections must be at least equal to number of agents so that each agent can have "
-                      "one ingoing connection")
-            elif inp > 0:
+            if inp <= args['n_agents'] * (args['n_agents']-1):  # fewer connections that the maximum
                 args['n_connections'] = inp
                 print("Setting number of connections to '{}'".format(inp))
-            else:
-                raise ValueError
+            else:  # more connections than maximum
+                args['n_connections'] = args['n_agents'] * (args['n_agents'] - 1)
+                print("{0} is higher than the maximum possible number of connections in the network.".format(inp))
+                print("Setting number of connections to maximum: '{}'".format(args['n_connections']))
         except:
             print("Wrong input type, please enter an integer larger than 0")
     
     def do_connection_density(self, inp):
-        '''Change the number of connections relative to number of agents. Must be an float inbetween 0 and 1'''
+        '''
+        Change the number of connections relative to number of agents. Must be a float between 0 and 1.
+        Replaces explicitly given number of connections.'''
         try:
             inp = float(inp)
             if inp < 0 or inp > 1 :
-                print("Density value has to be or be in between 0 and 1")
+                print("Density value has to be between 0 and 1")
             elif inp > 0:
                 args['n_connections'] = int(args['n_agents'] * (args['n_agents']-1) * inp) # all possible connections * density = number of connections
                 print("Using density value of '{}'".format(inp))
@@ -218,7 +225,7 @@ class MyPrompt(Cmd):
         spatial distances between the actors and that does not show any clustering. 
         Increasing clustering_distance reduces the average distance that ties cover.'''
         try:
-            inp = int(inp)
+            inp = float(inp)
             if inp >= 0:
                 args['cluster_distance'] = inp
                 print("Setting cluster distance to '{}'".format(inp))
@@ -228,6 +235,20 @@ class MyPrompt(Cmd):
             print("Wrong input type, please enter an integer larger or equal to 0")
 
     def do_load_experiment(self, inp):
+        '''
+        Loads the experiment settings stored the given text file. The file type doesn't need to be provided (.txt).
+        Setup of the file should be:
+        n_agents {value}
+        n_liars {value}
+        n_experts {value}
+        n_connections {value}
+        cluster_distance {value}
+        n_news {value}
+        n_steps {value}
+        connectivity_type {value}
+        communication_protocol {value}
+        conversation_protocol {value}
+        runs {value}'''
         if io_utils.experiment_exists(inp):
             global args  # explicitly telling python to change the outer scope args variable
             args = io_utils.load_experiment_settings(inp)
