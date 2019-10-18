@@ -218,7 +218,7 @@ class MyPrompt(Cmd):
         spatial distances between the actors and that does not show any clustering. 
         Increasing clustering_distance reduces the average distance that ties cover.'''
         try:
-            inp = int(inp)
+            inp = float(inp)
             if inp >= 0:
                 args['cluster_distance'] = inp
                 print("Setting cluster distance to '{}'".format(inp))
