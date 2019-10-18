@@ -45,14 +45,14 @@ class MyPrompt(Cmd):
         '''Change the number of agents. Must be an integer larger than 0'''
         try:
             inp = int(inp)
-            if inp > args['n_connections']:
+            # if the maximum number of connections for the new number of agents is lower than the existing number of connections
+            if (inp * (inp - 1)) < (args['n_agents'] * (args['n_agents'] - 1)):
                 args['n_agents'] = inp
-                args['n_connections'] = inp
+                # make number of connections, the maximum you can have with the new number of agents
+                args['n_connections'] = args['n_agents'] * (args['n_agents'] - 1)
                 print("Setting number of agents to '{}'".format(inp))
-                print("Number of connection too low for {0} of agents. Setting number of connections to '{1}'"
-                      .format(inp, inp))
-                # print("Number of agents must be at most the number of connections so that each agent has at least "
-                #       "one incoming connection")
+                print("Number of connection too high for {0} agents. Setting number of connections to maximum: '{1}'"
+                      .format(args['n_agents'], args['n_connections']))
             elif inp > 0:
                 args['n_agents'] = inp
                 print("Setting number of agents to '{}'".format(inp))
@@ -93,19 +93,13 @@ class MyPrompt(Cmd):
         '''Change the number of connections. Must be an integer larger than 0'''
         try:
             inp = int(inp)
-            if inp < args['n_agents']:
-                print("Number of connections must be at least equal to number of agents so that each agent can have "
-                      "one ingoing connection")
-            elif inp > 0:
-                if inp <= args['n_agents'] * (args['n_agents']-1):
-                    args['n_connections'] = inp
-                    print("Setting number of connections to '{}'".format(inp))
-                else:
-                    args['n_connections'] = args['n_agents'] * (args['n_agents'] - 1)
-                    print("{0} is higher than the maximum possible number of connections in the network.".format(inp))
-                    print("Setting number of connections to maximum: '{}'".format(args['n_connections']))
-            else:
-                raise ValueError
+            if inp <= args['n_agents'] * (args['n_agents']-1):  # fewer connections that the maximum
+                args['n_connections'] = inp
+                print("Setting number of connections to '{}'".format(inp))
+            else:  # more connections than maximum
+                args['n_connections'] = args['n_agents'] * (args['n_agents'] - 1)
+                print("{0} is higher than the maximum possible number of connections in the network.".format(inp))
+                print("Setting number of connections to maximum: '{}'".format(args['n_connections']))
         except:
             print("Wrong input type, please enter an integer larger than 0")
     
