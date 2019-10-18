@@ -97,8 +97,13 @@ class MyPrompt(Cmd):
                 print("Number of connections must be at least equal to number of agents so that each agent can have "
                       "one ingoing connection")
             elif inp > 0:
-                args['n_connections'] = inp
-                print("Setting number of connections to '{}'".format(inp))
+                if inp <= args['n_agents'] * (args['n_agents']-1):
+                    args['n_connections'] = inp
+                    print("Setting number of connections to '{}'".format(inp))
+                else:
+                    args['n_connections'] = args['n_agents'] * (args['n_agents'] - 1)
+                    print("{0} is higher than the maximum possible number of connections in the network.".format(inp))
+                    print("Setting number of connections to maximum: '{}'".format(args['n_connections']))
             else:
                 raise ValueError
         except:
