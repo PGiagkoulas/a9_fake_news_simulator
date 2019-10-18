@@ -105,11 +105,13 @@ class MyPrompt(Cmd):
             print("Wrong input type, please enter an integer larger than 0")
     
     def do_connection_density(self, inp):
-        '''Change the number of connections relative to number of agents. Must be an float inbetween 0 and 1'''
+        '''
+        Change the number of connections relative to number of agents. Must be a float between 0 and 1.
+        Replaces explicitly given number of connections.'''
         try:
             inp = float(inp)
             if inp < 0 or inp > 1 :
-                print("Density value has to be or be in between 0 and 1")
+                print("Density value has to be between 0 and 1")
             elif inp > 0:
                 args['n_connections'] = int(args['n_agents'] * (args['n_agents']-1) * inp) # all possible connections * density = number of connections
                 print("Using density value of '{}'".format(inp))
