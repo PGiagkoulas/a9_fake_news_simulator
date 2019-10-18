@@ -10,6 +10,7 @@ class Agent:
     id = None
     persuasiveness = 0.5
     expert = False
+    convinced = False   # this is set to true as soon as the agent took the opinion from an expert
 
     # initializer
     def __init__(self, opinion, scepticism, num_agents, id, persuasiveness, expert=False):
@@ -21,22 +22,34 @@ class Agent:
         self.persuasiveness = persuasiveness
         self.expert = expert
     # evaluate new opinion from discussion
-    def evaluate_opinion(self, new_opinion):
-        # accept or not
+    def evaluate_opinion(self, new_opinion, expert_opinion):
+        # expert opinion is true if the new opinion comes from an expert if it is accepted, the agent becomes
+        # equipped with evidence (convinced) and will not change their opinion again accept or not
         if random.uniform(0.0, 1.0) > self.scepticism:
-            self.opinion = new_opinion
+            if not self.convinced:
+                self.opinion = new_opinion
+            if expert_opinion:
+                self.convinced = True
 
-    def form_opinion(self):
-        # if the agent is either a liar or an expert they are 'stubborn' and don't change their opinion at all
-        if self.scepticism == 1:
-            pass
+    def form_opinion(self, expert_opinion):
+        # expert opinion is true if the new opinion comes from an expert if it is accepted, the agent becomes
+        # equipped with evidence (convinced) and will not change their opinion again accept or not
+        if expert_opinion:
+            self.convinced = True
+        # if the agent is convinced it overrides any other opinions in the opinion base
+        if self.convinced:
+            self.opinion = 1
         else:
-            opinion_base = [value for value in self.opinion_base.values() if value != 0 and value is not None]
-            # in case there is a tie between "true" and "false" information
-            if opinion_base.count(1) == opinion_base.count(-1):
-                # then the agent takes on the last opinion they heard with the probability of 1 - skepticism
-                if random.uniform(0.0, 1.0) > self.scepticism:
-                    self.opinion = -1 * self.opinion  # this flips the current opinion to the one that caused the tie
-            # if there is no tie, we just take the mode
+            # if the agent is either a liar or an expert they are 'stubborn' and don't change their opinion at all
+            if self.scepticism == 1:
+                pass
             else:
-                self.opinion = mode(opinion_base)
+                opinion_base = [value for value in self.opinion_base.values() if value != 0 and value is not None]
+                # in case there is a tie between "true" and "false" information
+                if opinion_base.count(1) == opinion_base.count(-1):
+                    # then the agent takes on the last opinion they heard with the probability of 1 - skepticism
+                    if random.uniform(0.0, 1.0) > self.scepticism:
+                        self.opinion = -1 * self.opinion  # this flips the current opinion to the one that caused the tie
+                # if there is no tie, we just take the mode
+                else:
+                    self.opinion = mode(opinion_base)

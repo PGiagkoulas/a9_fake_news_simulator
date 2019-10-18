@@ -23,6 +23,7 @@ class Environment:
     communication_protocol = None  # determines how agents choose whom to call
     conversation_protocol = None  # determines how a conversation takes place and how agents change their opinion
     connectivity = None
+    n_isolates = None  # number of isolated agents in the network, after initialization
 
     # initializer
     def __init__(self,
@@ -46,6 +47,8 @@ class Environment:
         self.num_steps = num_steps
         self.agent_list = self._generate_agents()
         self.connectivity_matrix = self._initialize_connectivity_matrix()
+        # detect isolated agents and make them convinced
+        self.n_isolates = self.convince_isolates()
         self.communication_protocol = communication_protocol
         self.conversation_protocol = conversation_protocol
 
@@ -68,10 +71,13 @@ class Environment:
         for a in agent_indexes[:self.num_liars]:
             list_of_agents[a].opinion = -1
             list_of_agents[a].scepticism = 1
+            list_of_agents[a].convinced = True
         for a in agent_indexes[self.num_liars:]:
             list_of_agents[a].opinion = 1
             list_of_agents[a].scepticism = 1
             list_of_agents[a].expert = True
+            list_of_agents[a].convinced = True
+            list_of_agents[a].persuasiveness = 1
         return list_of_agents
 
     # initialize connectivity matrix
@@ -177,17 +183,17 @@ class Environment:
             if agent_a.opinion != agent_b.opinion:
                 # determine winning opinion of the communication
                 # neutral opinions do not spread, the other agent's opinion automatically wins
-                if agent_a.opinion == 0:
+                if agent_a.opinion == 0 or agent_b.expert:
                     winner = 2  # opinion of agent_b is the outcome of discussion
-                elif agent_b.opinion == 0:
+                elif agent_b.opinion == 0 or agent_a.expert:
                     winner = 1  # opinion of agent_a is the outcome of discussion
                 else:  # randomly decide winning opinion
-                    winner = random.randint(1, 2)
+                    winner = self.calculate_winner(agent_a.persuasiveness, agent_b.persuasiveness)
                 # resolve agent acceptance
                 if winner == 1:
-                    agent_b.evaluate_opinion(agent_a.opinion)
+                    agent_b.evaluate_opinion(agent_a.opinion, agent_a.expert)
                 elif winner == 2:
-                    agent_a.evaluate_opinion(agent_b.opinion)
+                    agent_a.evaluate_opinion(agent_b.opinion, agent_b.expert)
             # after evaluation, the opinion bases are updated
             agent_b.opinion_base[self.agent_list.index(agent_a)] = agent_a.opinion
             agent_a.opinion_base[self.agent_list.index(agent_b)] = agent_b.opinion
@@ -195,15 +201,15 @@ class Environment:
             # agent_a is the sender and agent_b the receiver
             # neutral opinions don't spread
             if agent_a.opinion != 0:
-                agent_b.form_opinion()
+                agent_b.opinion_base[self.agent_list.index(agent_a)] = agent_a.opinion
+                agent_b.form_opinion(agent_a.expert)
             # after evaluation, the opinion bases are updated
-            agent_b.opinion_base[self.agent_list.index(agent_a)] = agent_a.opinion
             agent_a.opinion_base[self.agent_list.index(agent_b)] = agent_b.opinion
         elif self.conversation_protocol == "simple":
             # the receiver simply takes on the opinion of the sender with a certain probability based on their
             # scepticism
             if agent_a.opinion != 0:
-                agent_b.evaluate_opinion(agent_a.opinion)
+                agent_b.evaluate_opinion(agent_a.opinion, agent_a.expert)
             agent_b.opinion_base[self.agent_list.index(agent_a)] = agent_a.opinion
             agent_a.opinion_base[self.agent_list.index(agent_b)] = agent_b.opinion
 
@@ -240,6 +246,9 @@ class Environment:
         # update connectivity matrix
         self.connectivity_matrix[index_a, :] = union_phonebook
         self.connectivity_matrix[index_b, :] = union_phonebook
+        # agents get each other's contact
+        self.connectivity_matrix[index_a, index_b] = 1
+        self.connectivity_matrix[index_b, index_a] = 1
         # make certain no connection is made from the agents to themselves
         self.connectivity_matrix[index_a, index_a] = 0
         self.connectivity_matrix[index_b, index_b] = 0
@@ -332,6 +341,7 @@ class Environment:
                        "#positives": [stats[0]],
                        "#neutrals": [stats[1]],
                        "#negatives": stats[2],
+                       "#isolates": self.n_isolates,
                        "#experts": self.num_experts,
                        "#liars": self.num_liars,
                        "#initial_connections": self.num_connections,
@@ -346,6 +356,7 @@ class Environment:
                        "#positives": [stats[0]],
                        "#neutrals": [stats[1]],
                        "#negatives": stats[2],
+                       "#isolates": self.n_isolates,
                        "#experts": self.num_experts,
                        "#liars": self.num_liars,
                        "#initial_connections": self.num_connections,
@@ -359,12 +370,16 @@ class Environment:
 
     # runs the simulation
     def run_simulation(self, verbose=False, stepwise=False):
+        final_step = 0
         run_results_df = pd.DataFrame()
         if verbose:  # prints only if explicitly stated
             print(">> Initial configurations:")
             self.simulations_stats()
             print("<< Beginning simulation >>")
         for step in tqdm(range(1, self.num_steps + 1)):
+            if self.converged():
+                final_step = step
+                break
             self.run_communication_protocol()
             if stepwise:
                 run_results_df = pd.concat([run_results_df, self.output_measures(step)])
@@ -374,7 +389,7 @@ class Environment:
         if stepwise:
             return run_results_df
         else:
-            return self.output_measures()
+            return self.output_measures(step=final_step)
 
     # calculates distance
     def distance(self, xy1, xy2):
@@ -400,3 +415,30 @@ class Environment:
                 total_possible_connections += len(temp_neighbours) - 1
         # return the coefficient
         return neighbour_connections / total_possible_connections / self.num_agents
+
+    def calculate_winner(self, persuasiveness_a, persuasiveness_b):
+        # normalize the probabilities
+        a = persuasiveness_a / (persuasiveness_a + persuasiveness_b)
+        b = persuasiveness_b / (persuasiveness_a + persuasiveness_b)
+        if random.uniform(0.0, 1.0) > a:
+            return 2
+        else:
+            return 1
+
+    def converged(self):
+        if all([agent.convinced for agent in self.agent_list]):
+            return True
+        else:
+            return False
+
+    # detects all isolated agents and sets their convinced flag to 1, since they will never have an option of
+    # changing opinion + returns the number of isolates in the network
+    def convince_isolates(self):
+        isolates = 0
+        for index in range(self.num_agents):
+            outgoing = self.connectivity_matrix[index, :]
+            incoming = self.connectivity_matrix[:, index]
+            if all([inc == 0 for inc in incoming]) and all([out == 0 for out in outgoing]):
+                self.agent_list[index].convinced = 1
+                isolates += 1
+        return isolates
