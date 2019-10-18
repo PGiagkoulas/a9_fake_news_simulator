@@ -32,6 +32,7 @@ class MyPrompt(Cmd):
     conversation_protocol: 'discussion' \n
     If you want to start the simulation with these values enter 'start'. 
     Otherwise change values by entering '{parameter} {value}' and then enter 'start'.
+    If you have prepared an experiment script, you can load its parameters by entering 'load_experiment {file_name}'
     Enter '?' for an overview over all commands.
     """
 
@@ -233,6 +234,20 @@ class MyPrompt(Cmd):
             print("Wrong input type, please enter an integer larger or equal to 0")
 
     def do_load_experiment(self, inp):
+        '''
+        Loads the experiment settings stored the given text file. The file type doesn't need to be provided (.txt).
+        Setup of the file should be:
+        n_agents {value}
+        n_liars {value}
+        n_experts {value}
+        n_connections {value}
+        cluster_distance {value}
+        n_news {value}
+        n_steps {value}
+        connectivity_type {value}
+        communication_protocol {value}
+        conversation_protocol {value}
+        runs {value}'''
         if io_utils.experiment_exists(inp):
             global args  # explicitly telling python to change the outer scope args variable
             args = io_utils.load_experiment_settings(inp)
