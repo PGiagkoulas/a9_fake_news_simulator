@@ -38,15 +38,23 @@ def load_experiment_settings(experiment_name='default'):
 
 
 # exports results' dataframe to specific directory
-def export_results(results_df):
+def export_results(results_df=None):
     # create directory if it's not present
     if not os.path.isdir(RESULTS_PATH):
         os.mkdir(RESULTS_PATH)
-    # calculate file number
-    n = sum(1 for f in os.listdir(RESULTS_PATH) if os.path.isfile(os.path.join(RESULTS_PATH, f)))
-    # export file
-    results_df.to_csv('{0}sim_runs_{1}.csv'.format(RESULTS_PATH, n+1))
-    print(">> Results file was exported in directory: {0}".format(RESULTS_PATH))
+    # create appropriate sub-directory for current experiments
+    serial = 1
+    result_dir_name = os.path.join(RESULTS_PATH, 'experiment_{0}/'.format(serial))
+    while os.path.isdir(result_dir_name):
+        serial += 1
+        result_dir_name = os.path.join(RESULTS_PATH, 'experiment_{0}/'.format(serial))
+    os.mkdir(result_dir_name)
+    for df in results_df:
+        # calculate file number
+        n = sum(1 for f in os.listdir(result_dir_name) if os.path.isfile(os.path.join(result_dir_name, f)))
+        # export file
+        df.to_csv('{0}sim_runs_{1}.csv'.format(result_dir_name, n+1))
+    print(">> Result file/-s exported in directory: {0}".format(os.path.abspath(result_dir_name)))
 
 if __name__ == '__main__':
-    load_experiment_settings('default')
+    pass

@@ -274,7 +274,7 @@ class MyPrompt(Cmd):
                 # combine run results with existing ones
                 run_results_df = pd.concat([run_results_df, network.run_simulation()])
             # export results dataframe
-            io_utils.export_results(run_results_df)
+            io_utils.export_results([run_results_df])  # export takes a list of dataframes!
         if inp == 'show_values':
             self.do_show_values()
         if inp == 'show_description':
@@ -283,12 +283,16 @@ class MyPrompt(Cmd):
             self.run_stepwise()
 
     def run_stepwise(self):
-        network = environment.Environment(args['n_agents'], args['n_liars'], args['n_experts'],
-                                          args['n_connections'], args['cluster_distance'], args['n_news'],
-                                          args['n_steps'], args['connectivity_type'],
-                                          args['communication_protocol'], args['conversation_protocol'])
-        # export results dataframe
-        io_utils.export_results(network.run_simulation(stepwise=True))
+        result_dfs = []
+        for run in range(1, args['runs'] + 1):
+            print("-Run {0}/{1}".format(run, args['runs']))
+            network = environment.Environment(args['n_agents'], args['n_liars'], args['n_experts'],
+                                              args['n_connections'], args['cluster_distance'], args['n_news'],
+                                              args['n_steps'], args['connectivity_type'],
+                                              args['communication_protocol'], args['conversation_protocol'])
+            # export results dataframe
+            result_dfs.append(network.run_simulation(stepwise=True))
+        io_utils.export_results(result_dfs)
 
 
 if __name__ == "__main__":
