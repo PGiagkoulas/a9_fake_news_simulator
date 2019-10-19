@@ -380,6 +380,9 @@ class Environment:
             if self.converged():
                 final_step = step
                 break
+            if self.communication_protocol == 'CO' and self.all_contacted():
+                final_step = step
+                break
             self.run_communication_protocol()
             if stepwise:
                 run_results_df = pd.concat([run_results_df, self.output_measures(step)])
@@ -442,3 +445,18 @@ class Environment:
                 self.agent_list[index].convinced = 1
                 isolates += 1
         return isolates
+
+    def all_contacted(self):
+        # assume all agents have been contacted
+        all_contacted = True
+        for agent_index, agent in enumerate(self.agent_list):
+            # getting sender's connections
+            agent_connectivity = self.connectivity_matrix[agent_index, :]
+            # getting ids of possible receivers
+            agent_phonebook = [index for index in range(0, self.num_agents)
+                                if (agent_connectivity[index] != 0 and index != agent_index)]
+            valid_conntacts = [contact for contact in agent_phonebook if agent.opinion_base[contact] is None]
+            if valid_conntacts:
+                all_contacted = False
+                return all_contacted
+        return all_contacted
