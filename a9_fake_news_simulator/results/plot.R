@@ -13,12 +13,6 @@ df7 <- read.csv("sim_runs_16.csv")
 df8 <- read.csv("sim_runs_17.csv")
 df9 <- read.csv("sim_runs_18.csv")
 
-make_plotdf <- function(datadf) {
-  return_plotdf <- datadf %>%
-    select(timestep, pos, neg, neut) %>%
-    gather(key = "variable", value = "value", -timestep)
-  return(return_plotdf)
-}
 
 make_basicdf <- function(datadf) {
   return_basicdf <- data.frame(timestep = datadf$current.step,
@@ -26,6 +20,13 @@ make_basicdf <- function(datadf) {
                                neg = datadf$X.negatives,
                                neut = datadf$X.neutrals)
   return(return_basicdf)
+}
+
+make_plotdf <- function(datadf) {
+  return_plotdf <- datadf %>%
+    select(timestep, pos, neg, neut) %>%
+    gather(key = "variable", value = "value", -timestep)
+  return(return_plotdf)
 }
 
 make_plot <- function(datadf) {
