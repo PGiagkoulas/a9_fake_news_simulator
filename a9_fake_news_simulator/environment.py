@@ -199,12 +199,12 @@ class Environment:
             agent_a.opinion_base[self.agent_list.index(agent_b)] = agent_b.opinion
         elif self.conversation_protocol == "majority_opinion":
             # agent_a is the sender and agent_b the receiver
-            # neutral opinions don't spread
-            if agent_a.opinion != 0:
-                agent_b.opinion_base[self.agent_list.index(agent_a)] = agent_a.opinion
-                agent_b.form_opinion(agent_a.expert)
-            # after evaluation, the opinion bases are updated
+            # the opinion bases are updated
             agent_a.opinion_base[self.agent_list.index(agent_b)] = agent_b.opinion
+            agent_b.opinion_base[self.agent_list.index(agent_a)] = agent_a.opinion
+            # opinions are formed based on the updated opinion bases
+            agent_a.form_opinion(agent_b.expert)
+            agent_b.form_opinion(agent_a.expert)
         elif self.conversation_protocol == "simple":
             # the receiver simply takes on the opinion of the sender with a certain probability based on their
             # scepticism
@@ -371,6 +371,7 @@ class Environment:
     # runs the simulation
     def run_simulation(self, verbose=False, stepwise=False):
         final_step = 0
+        skip_step = 10  # how often to print with step-wise
         run_results_df = pd.DataFrame()
         if verbose:  # prints only if explicitly stated
             print(">> Initial configurations:")
@@ -384,7 +385,7 @@ class Environment:
                 final_step = step
                 break
             self.run_communication_protocol()
-            if stepwise:
+            if stepwise and (step == 1 or step%skip_step==0):
                 run_results_df = pd.concat([run_results_df, self.output_measures(step)])
         if verbose:  # prints only if explicitly stated
             print("<< END OF SIMULATION >>")

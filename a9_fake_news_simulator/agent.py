@@ -32,18 +32,16 @@ class Agent:
                 self.convinced = True
 
     def form_opinion(self, expert_opinion):
-        # expert opinion is true if the new opinion comes from an expert if it is accepted, the agent becomes
-        # equipped with evidence (convinced) and will not change their opinion again accept or not
-        if expert_opinion:
-            self.convinced = True
-        # if the agent is convinced it overrides any other opinions in the opinion base
-        if self.convinced:
-            self.opinion = 1
-        else:
-            # if the agent is either a liar or an expert they are 'stubborn' and don't change their opinion at all
-            if self.scepticism == 1:
-                pass
-            else:
+        # if the agent is neither a liar nor an expert they are willing to change their opinion
+        if self.scepticism != 1:
+            # expert opinion is true if the new opinion comes from an expert if it is accepted, the agent becomes
+            # equipped with evidence (convinced) and will not change their opinion again accept or not
+            if expert_opinion:
+                self.convinced = True
+            # once an agent becomes convinced they always maintain an opinion of 1
+            if self.convinced:
+                self.opinion = 1
+            else:  # otherwise an agent goes into forming their opinion
                 opinion_base = [value for value in self.opinion_base.values() if value != 0 and value is not None]
                 # in case there is a tie between "true" and "false" information
                 if opinion_base.count(1) == opinion_base.count(-1):
@@ -53,3 +51,4 @@ class Agent:
                 # if there is no tie, we just take the mode
                 else:
                     self.opinion = mode(opinion_base)
+
