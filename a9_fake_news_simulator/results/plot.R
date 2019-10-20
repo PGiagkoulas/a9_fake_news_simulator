@@ -187,13 +187,13 @@ all_plot <- makeplot_wo_legend(all_df)
 all_plot
 
 ######## plotting avg and std of 100 runs ###########
-library(reshape2)
+library(reshape)
 
-setwd("/home/manvi/Documents/dmas/lns_sun_maj")
+# setwd("/home/manvi/Documents/dmas/lns_sun_maj")
 
 # need 1df for pos, 1df for neg
 
-timesteps = 5000
+timesteps = 500
 
 timestepvector <- c(1:timesteps)
 timestepvector <- paste(timestepvector)
@@ -204,14 +204,17 @@ fileCount = 1
 
 library(mefa)
 
+numRowsVector <- vector()
+
 while (fileCount < totalFiles + 1) {
   if (fileCount == 1) {
     filename <- paste("sim_runs_", toString(fileCount), ".csv", sep="")
     newData <- read.csv(filename)
     numRows <- nrow(newData)
+    numRowsVector <- c(numRowsVector, numRows)
     if (numRows < timesteps) {
       diffRows <- timesteps - numRows
-      appenddf <- rep(tail(df, 1), times=diffRows)
+      appenddf <- rep(tail(newData, 1), times=diffRows)
       newData <- rbind(newData, appenddf)
     }
     extractData <- data.frame(pos = newData$X.positives,
@@ -223,11 +226,12 @@ while (fileCount < totalFiles + 1) {
   }
   else {
     filename <- paste("sim_runs_", toString(fileCount), ".csv", sep="")
-    newData <- read.csv(filename, nrows = timesteps)
+    newData <- read.csv(filename)
     numRows <- nrow(newData)
+    numRowsVector <- c(numRowsVector, numRows)
     if (numRows < timesteps) {
       diffRows <- timesteps - numRows
-      appenddf <- rep(tail(df, 1), times=diffRows)
+      appenddf <- rep(tail(newData, 1), times=diffRows)
       newData <- rbind(newData, appenddf)
     }
     extractData <- data.frame(pos = newData$X.positives,
@@ -245,6 +249,7 @@ while (fileCount < totalFiles + 1) {
 posNum$runid <- c(1:totalFiles)
 negNum$runid <- c(1:totalFiles)
 
+# use only reshape package with this, NOT reshape2!
 meltposNum <- melt(posNum, id.vars = "runid", measure.vars = timestepvector)
 meltnegNum <- melt(negNum, id.vars = "runid", measure.vars = timestepvector)
 
@@ -263,13 +268,23 @@ summarydf <- summarySE(meltposNum,
                        groupvars=c("variable"))
 
 # make the summarydf smaller bcoz no space to plot
-rowsToRemove = setdiff(1:timesteps,seq(1,timesteps,20))
-summarydf <- summarydf[-rowsToRemove, ]
+# rowsToRemove = setdiff(1:timesteps,seq(1,timesteps,20))
+# summarydf <- summarydf[-rowsToRemove, ]
+
+# change variable to numeric from factor
+summarydf$variable <- as.numeric(levels(summarydf$variable))[summarydf$variable]
+
+avgStop <- mean(numRowsVector)
+sdStop <- sd(numRowsVector)
 
 p <- ggplot(summarydf, aes(x=variable, y=value)) + 
   geom_errorbar(aes(ymin=value-sd, ymax=value+sd)) +
   geom_line() +
-  geom_point()
+  geom_point() +
+  scale_x_continuous(breaks = round(seq(0, 501, by = 20),1)) +
+  geom_vline(xintercept = avgStop, size = 1.2) +
+  geom_vline(xintercept = avgStop - sdStop, linetype="dotted", size = 1.2) +
+  geom_vline(xintercept = avgStop + sdStop, linetype="dotted", size = 1.2)
 p
 
 
