@@ -189,11 +189,11 @@ all_plot
 ######## plotting avg and std of 100 runs ###########
 library(reshape2)
 
-setwd("/home/manvi/Documents/dmas/experiment_1")
+setwd("/home/manvi/Documents/dmas/lns_sun_maj")
 
 # need 1df for pos, 1df for neg
 
-timesteps = 500
+timesteps = 5000
 
 timestepvector <- c(1:timesteps)
 timestepvector <- paste(timestepvector)
@@ -202,10 +202,18 @@ totalFiles = 100
 
 fileCount = 1
 
+library(mefa)
+
 while (fileCount < totalFiles + 1) {
   if (fileCount == 1) {
     filename <- paste("sim_runs_", toString(fileCount), ".csv", sep="")
-    newData <- read.csv(filename, nrows = timesteps)
+    newData <- read.csv(filename)
+    numRows <- nrow(newData)
+    if (numRows < timesteps) {
+      diffRows <- timesteps - numRows
+      appenddf <- rep(tail(df, 1), times=diffRows)
+      newData <- rbind(newData, appenddf)
+    }
     extractData <- data.frame(pos = newData$X.positives,
                               neg = newData$X.negatives)
     posNum <- data.frame(t(extractData$pos))
@@ -215,7 +223,13 @@ while (fileCount < totalFiles + 1) {
   }
   else {
     filename <- paste("sim_runs_", toString(fileCount), ".csv", sep="")
-    new_data <- read.csv(filename, nrows = timesteps)
+    newData <- read.csv(filename, nrows = timesteps)
+    numRows <- nrow(newData)
+    if (numRows < timesteps) {
+      diffRows <- timesteps - numRows
+      appenddf <- rep(tail(df, 1), times=diffRows)
+      newData <- rbind(newData, appenddf)
+    }
     extractData <- data.frame(pos = newData$X.positives,
                               neg = newData$X.negatives)
     extractPos <- data.frame(t(extractData$pos))
@@ -228,15 +242,35 @@ while (fileCount < totalFiles + 1) {
   fileCount <- fileCount + 1
 }
 
-meltposNum <- melt(posNum)
-meltposNum$runid <- 1:totalFiles
+posNum$runid <- c(1:totalFiles)
+negNum$runid <- c(1:totalFiles)
 
+meltposNum <- melt(posNum, id.vars = "runid", measure.vars = timestepvector)
+meltnegNum <- melt(negNum, id.vars = "runid", measure.vars = timestepvector)
+
+###### plot all runs #######
 library(ggplot2)
-p <- ggplot(meltposNum, aes(variable, value, group=factor(runid))) + geom_line()
+p <- ggplot(meltposNum, aes(variable, value, group=factor(runid))) +
+  geom_line() +
+  theme(legend.position = "none")
 p
 
+########### avg summary stuff ##########
+library(Rmisc)
 
+summarydf <- summarySE(meltposNum,
+                       measurevar="value",
+                       groupvars=c("variable"))
 
+# make the summarydf smaller bcoz no space to plot
+rowsToRemove = setdiff(1:timesteps,seq(1,timesteps,20))
+summarydf <- summarydf[-rowsToRemove, ]
+
+p <- ggplot(summarydf, aes(x=variable, y=value)) + 
+  geom_errorbar(aes(ymin=value-sd, ymax=value+sd)) +
+  geom_line() +
+  geom_point()
+p
 
 
 
