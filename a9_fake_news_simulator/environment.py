@@ -180,7 +180,7 @@ class Environment:
         self.exchange_phonebooks(agent_a, agent_b)
         if self.conversation_protocol == "discussion":
             # agent_a is the sender and agent_b the receiver
-            if agent_a.opinion != agent_b.opinion:
+            if agent_a.opinion != agent_b.opinion or (agent_a.expert or agent_b.expert):
                 # determine winning opinion of the communication
                 # neutral opinions do not spread, the other agent's opinion automatically wins
                 if agent_a.opinion == 0 or agent_b.expert:
@@ -265,12 +265,14 @@ class Environment:
             sender_phonebook = [index for index in range(0, self.num_agents)
                                 if (sender_connectivity[index] != 0 and index != sender_index)]
             if not sender_phonebook:
-                # stop if the phonebook is empty
-                return
+                # if the phonebook is empty nothing has changed in this time step
+                return False
             # randomly pick one of the possible receivers
             receiver_index = sender_phonebook[random.randint(0, len(sender_phonebook) - 1)]  # randint is inclusive
             receiver = self.agent_list[receiver_index]
             self.agent_conversation(sender, receiver)
+            # if something changed, it returns true. This is used for counting successful step
+            return True
         elif self.communication_protocol == "SYO":
             # in this protocol makes agents try to convince everyone they know of their own opinion
             sender_index = self.choose_random_sender()
@@ -285,10 +287,13 @@ class Environment:
             valid_contacts = [contact for contact in sender_phonebook if
                               sender.opinion_base[contact] != sender.opinion]
             if not valid_contacts:
-                return
+                # if there are not valid contacts, nothing changes in this time step
+                return False
             receiver_index = valid_contacts[random.randint(0, len(valid_contacts) - 1)]  # randint is inclusive
             receiver = self.agent_list[receiver_index]
             self.agent_conversation(sender, receiver)
+            # if something changed, it returns true. This is used for counting successful step
+            return True
         elif self.communication_protocol == "CO":
             # Communicate once is the better name for CMO
             # in this protocol makes agents try to convince everyone they know of their own opinion
@@ -305,10 +310,13 @@ class Environment:
             valid_contacts = [contact for contact in sender_phonebook if
                               sender.opinion_base[contact] is None]
             if not valid_contacts:
-                return
+                # if there are not valid contacts, nothing changes in this time step
+                return False
             receiver_index = valid_contacts[random.randint(0, len(valid_contacts) - 1)]  # randint is inclusive
             receiver = self.agent_list[receiver_index]
             self.agent_conversation(sender, receiver)
+            # if something changed, it returns true. This is used for counting successful step
+            return True
         elif self.communication_protocol == "LNS":
             sender_index = self.choose_random_sender()
             sender = self.agent_list[sender_index]
@@ -322,11 +330,14 @@ class Environment:
             # or if you know that they have a neutral opinion
             valid_contacts = [contact for contact in sender_phonebook if
                               sender.opinion_base[contact] is None or sender.opinion_base[contact] == 0]
-            if not valid_contacts:
-                return
+            if len(valid_contacts) == 0:
+                # if there are not valid contacts, nothing changes in this time step
+                return False
             receiver_index = valid_contacts[random.randint(0, len(valid_contacts) - 1)]  # randint is inclusive
             receiver = self.agent_list[receiver_index]
             self.agent_conversation(sender, receiver)
+            # if something changed, it returns true. This is used for counting successful step
+            return True
 
     def choose_random_sender(self):
         # choose agent to communicate
@@ -373,23 +384,21 @@ class Environment:
         final_step = 0
         skip_step = 10  # how often to print with step-wise
         run_results_df = pd.DataFrame()
-        if verbose:  # prints only if explicitly stated
-            print(">> Initial configurations:")
-            self.simulations_stats()
-            print("<< Beginning simulation >>")
+        # to decrease the number of lines in the csvs we count only the steps in which agents actually communicated
+        successful_steps = 1
         for step in tqdm(range(1, self.num_steps + 1)):
             if self.converged():
-                final_step = step
+                final_step = successful_steps
                 break
-            if self.communication_protocol == 'CO' and self.all_contacted():
-                final_step = step
+            if (self.communication_protocol == 'CO' or self.communication_protocol == 'LNS') and self.all_contacted():
+                final_step = successful_steps
                 break
-            self.run_communication_protocol()
-            if stepwise and (step == 1 or step%skip_step==0):
-                run_results_df = pd.concat([run_results_df, self.output_measures(step)])
-        if verbose:  # prints only if explicitly stated
-            print("<< END OF SIMULATION >>")
-            self.simulations_stats(printing=True)
+            changed = self.run_communication_protocol()
+            if changed:
+                successful_steps += 1
+                if stepwise and (step == 1 or step % skip_step == 0):
+                    # only concat new line to dataframe if a conversation took place
+                    run_results_df = pd.concat([run_results_df, self.output_measures(successful_steps)])
         if stepwise:
             return run_results_df
         else:
@@ -455,9 +464,14 @@ class Environment:
             agent_connectivity = self.connectivity_matrix[agent_index, :]
             # getting ids of possible receivers
             agent_phonebook = [index for index in range(0, self.num_agents)
-                                if (agent_connectivity[index] != 0 and index != agent_index)]
-            valid_conntacts = [contact for contact in agent_phonebook if agent.opinion_base[contact] is None]
+                               if (agent_connectivity[index] != 0 and index != agent_index)]
+            if self.communication_protocol == 'CO':
+                valid_conntacts = [contact for contact in agent_phonebook if agent.opinion_base[contact] is None]
+            elif self.communication_protocol == 'LNS':
+                valid_conntacts = [contact for contact in agent_phonebook
+                                   if agent.opinion_base[contact] is None or agent.opinion_base[contact] == 0]
             if valid_conntacts:
                 all_contacted = False
                 return all_contacted
         return all_contacted
+
