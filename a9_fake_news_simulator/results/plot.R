@@ -189,29 +189,47 @@ all_plot
 ######## plotting avg and std of 100 runs ###########
 library(reshape)
 
-setwd("/home/manvi/Documents/dmas/LNS_SUN_DISCUSSION_STEPWISE")
+# setwd("/home/manvi/Documents/dmas/lns_sun_maj")
 
 # need 1df for pos, 1df for neg
 
-timesteps = 500
-
-timestepvector <- c(1:timesteps)
-timestepvector <- paste(timestepvector)
-
 totalFiles = 100
-
-fileCount = 1
 
 library(mefa)
 
 numRowsVector <- vector()
 
+# timesteps can dynamically change based on when the runs converged
+
+# loop to find maximum of convergence points
+fileCount = 1
 while (fileCount < totalFiles + 1) {
   if (fileCount == 1) {
     filename <- paste("sim_runs_", toString(fileCount), ".csv", sep="")
     newData <- read.csv(filename)
     numRows <- nrow(newData)
     numRowsVector <- c(numRowsVector, numRows)
+  }
+  else {
+    filename <- paste("sim_runs_", toString(fileCount), ".csv", sep="")
+    newData <- read.csv(filename)
+    numRows <- nrow(newData)
+    numRowsVector <- c(numRowsVector, numRows)
+  }
+  fileCount <- fileCount + 1
+}
+
+timesteps = max(numRowsVector, na.rm = TRUE)
+
+timestepvector <- c(1:timesteps)
+timestepvector <- paste(timestepvector)
+
+fileCount = 1
+while (fileCount < totalFiles + 1) {
+  if (fileCount == 1) {
+    filename <- paste("sim_runs_", toString(fileCount), ".csv", sep="")
+    newData <- read.csv(filename)
+    numRows <- nrow(newData)
     if (numRows < timesteps) {
       diffRows <- timesteps - numRows
       appenddf <- rep(tail(newData, 1), times=diffRows)
@@ -228,7 +246,6 @@ while (fileCount < totalFiles + 1) {
     filename <- paste("sim_runs_", toString(fileCount), ".csv", sep="")
     newData <- read.csv(filename)
     numRows <- nrow(newData)
-    numRowsVector <- c(numRowsVector, numRows)
     if (numRows < timesteps) {
       diffRows <- timesteps - numRows
       appenddf <- rep(tail(newData, 1), times=diffRows)
@@ -277,32 +294,37 @@ summarydf <- summarySE(meltAll,
 
 # change variable to numeric from factor
 summarydf$variable <- as.numeric(levels(summarydf$variable))[summarydf$variable]
+summarydf$variable <- summarydf$variable / 10
 
-avgStop <- mean(numRowsVector)
-sdStop <- sd(numRowsVector)
+avgStop <- mean(numRowsVector) / 10
+sdStop <- sd(numRowsVector) / 10
 
 library(ggplot2)
 
+title = expression(paste("Time step / 10\U00B2", sep = ""))  
+
 p <- ggplot(summarydf, aes(x=variable, y=value, group=Opinion, color=Opinion)) + 
   geom_line() +
-  geom_point() +
+  geom_point(size = 3) +
   geom_errorbar(aes(ymin=value-sd, ymax=value+sd)) +
-  scale_x_continuous(breaks = round(seq(0, 501, by = 20), 1)) +
+  scale_x_continuous(breaks = round(seq(0, 45, by = 2))) +
   scale_y_continuous(breaks = round(seq(0, 100, by = 10))) +
   geom_vline(xintercept = avgStop, size = 1.2) +
   geom_vline(xintercept = avgStop - sdStop, linetype="dotted", size = 1.2) +
   geom_vline(xintercept = avgStop + sdStop, linetype="dotted", size = 1.2) +
-  theme(axis.title = element_text(size = 30),
-        axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)),
-        axis.text = element_text(size = 20),
+  theme(axis.title = element_text(size = 40),
+        axis.title.x = element_text(margin = margin(t = 20, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0)),
+        axis.text = element_text(size = 30),
         legend.position = c(0.9, 0.5),
-        legend.text = element_text(size = 18),
-        legend.title = element_text(size = 23),
-        plot.title = element_text(size = 33, hjust = 0.5, margin = margin(t=5, b=20, r=0, l=0))) +
+        legend.text = element_text(size = 28),
+        axis.ticks = element_line(size = 2),
+        legend.title = element_text(size = 33),
+        plot.title = element_text(size = 48, hjust = 0.5, margin = margin(t=5, b=20, r=0, l=0))) +
   ylab("No. of agents") +
-  xlab("Time step") +
+  xlab(title) +
   scale_color_manual(values = c("red", "green")) +
-  ggtitle("Experiment: LNS and Discussion on a Sun Graph")
+  ggtitle("Experiment: LNS and Majority on a Sun Graph")
 p
 
 
