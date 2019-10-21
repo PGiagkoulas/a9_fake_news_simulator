@@ -189,7 +189,7 @@ all_plot
 ######## plotting avg and std of 100 runs ###########
 library(reshape)
 
-# setwd("/home/manvi/Documents/dmas/lns_sun_maj")
+setwd("/home/manvi/Documents/dmas/LNS_SUN_DISCUSSION_STEPWISE")
 
 # need 1df for pos, 1df for neg
 
@@ -251,7 +251,11 @@ negNum$runid <- c(1:totalFiles)
 
 # use only reshape package with this, NOT reshape2!
 meltposNum <- melt(posNum, id.vars = "runid", measure.vars = timestepvector)
+meltposNum$Opinion <- "Positive (+1)"
 meltnegNum <- melt(negNum, id.vars = "runid", measure.vars = timestepvector)
+meltnegNum$Opinion <- "Negative (-1)"
+
+meltAll <- rbind(meltposNum, meltnegNum)
 
 ###### plot all runs #######
 library(ggplot2)
@@ -263,9 +267,9 @@ p
 ########### avg summary stuff ##########
 library(Rmisc)
 
-summarydf <- summarySE(meltposNum,
+summarydf <- summarySE(meltAll,
                        measurevar="value",
-                       groupvars=c("variable"))
+                       groupvars=c("variable", "Opinion"))
 
 # make the summarydf smaller bcoz no space to plot
 # rowsToRemove = setdiff(1:timesteps,seq(1,timesteps,20))
@@ -277,14 +281,28 @@ summarydf$variable <- as.numeric(levels(summarydf$variable))[summarydf$variable]
 avgStop <- mean(numRowsVector)
 sdStop <- sd(numRowsVector)
 
-p <- ggplot(summarydf, aes(x=variable, y=value)) + 
-  geom_errorbar(aes(ymin=value-sd, ymax=value+sd)) +
+library(ggplot2)
+
+p <- ggplot(summarydf, aes(x=variable, y=value, group=Opinion, color=Opinion)) + 
   geom_line() +
   geom_point() +
-  scale_x_continuous(breaks = round(seq(0, 501, by = 20),1)) +
+  geom_errorbar(aes(ymin=value-sd, ymax=value+sd)) +
+  scale_x_continuous(breaks = round(seq(0, 501, by = 20), 1)) +
+  scale_y_continuous(breaks = round(seq(0, 100, by = 10))) +
   geom_vline(xintercept = avgStop, size = 1.2) +
   geom_vline(xintercept = avgStop - sdStop, linetype="dotted", size = 1.2) +
-  geom_vline(xintercept = avgStop + sdStop, linetype="dotted", size = 1.2)
+  geom_vline(xintercept = avgStop + sdStop, linetype="dotted", size = 1.2) +
+  theme(axis.title = element_text(size = 30),
+        axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)),
+        axis.text = element_text(size = 20),
+        legend.position = c(0.9, 0.5),
+        legend.text = element_text(size = 18),
+        legend.title = element_text(size = 23),
+        plot.title = element_text(size = 33, hjust = 0.5, margin = margin(t=5, b=20, r=0, l=0))) +
+  ylab("No. of agents") +
+  xlab("Time step") +
+  scale_color_manual(values = c("red", "green")) +
+  ggtitle("Experiment: LNS and Discussion on a Sun Graph")
 p
 
 
