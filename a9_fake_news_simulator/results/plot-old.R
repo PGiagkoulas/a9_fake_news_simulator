@@ -189,10 +189,9 @@ all_plot
 ######## plotting avg and std of 100 runs ###########
 library(reshape)
 
-setwd("/home/manvi/Documents/dmas/cmo_sun_maj_stepwise")
+setwd("/home/manvi/Documents/dmas/sun_CMO_discus/step_wise")
 
 # need 1df for pos, 1df for neg
-
 totalFiles = 100
 
 library(mefa)
@@ -272,18 +271,6 @@ meltposNum$Opinion <- "Positive (+1)"
 meltnegNum <- melt(negNum, id.vars = "runid", measure.vars = timestepvector)
 meltnegNum$Opinion <- "Negative (-1)"
 
-meltDisc <- rbind(meltposNum, meltnegNum)
-meltDisc$interac <- "discussion"
-
-meltMaj <- rbind(meltposNum, meltnegNum)
-meltMaj$interac <- "majority"
-meltAll <- rbind(meltMaj, meltDisc)
-
-meltAll$interac <- as.factor(meltAll$interac)
-meltAll$Opinion <- as.factor(meltAll$Opinion)
-
-# for nicer graphs: use the above for 2 types of interaction protocols with LNS + SUN
-
 meltAll <- rbind(meltposNum, meltnegNum)
 
 ###### plot all runs #######
@@ -298,7 +285,7 @@ library(Rmisc)
 
 summarydf <- summarySE(meltAll,
                        measurevar="value",
-                       groupvars=c("variable", "Opinion", "interac"))
+                       groupvars=c("variable", "Opinion"))
 
 # make the summarydf smaller bcoz no space to plot
 # rowsToRemove = setdiff(1:timesteps,seq(1,timesteps,20))
@@ -313,23 +300,17 @@ sdStop <- sd(numRowsVector) / 10
 
 library(ggplot2)
 
-title = expression(paste("Time step / 10\U00B2", sep = ""))
+title = expression(paste("Time step / 10\U00B2", sep = ""))  
 
-oldavgStop <- 49.546
-oldsdStop <- 0.3729273
-
-p <- ggplot(summarydf, aes(x=variable, y=value, color=Opinion, alpha=interac)) + 
+p <- ggplot(summarydf, aes(x=variable, y=value, group=Opinion, color=Opinion)) + 
   geom_line() +
-  geom_point(size = 3) +
+  geom_point() +
   geom_errorbar(aes(ymin=value-sd, ymax=value+sd)) +
   scale_x_continuous(breaks = round(seq(0, 55, by = 2))) +
   scale_y_continuous(breaks = round(seq(0, 100, by = 10))) +
   geom_vline(xintercept = avgStop, size = 2) +
   geom_vline(xintercept = avgStop - sdStop, linetype="longdash", size = 1.5) +
   geom_vline(xintercept = avgStop + sdStop, linetype="longdash", size = 1.5) +
-  geom_vline(xintercept = oldavgStop, size = 2, alpha = 0.2) +
-  geom_vline(xintercept = oldavgStop - oldsdStop, linetype="longdash", size = 1.5, alpha = 0.2) +
-  geom_vline(xintercept = oldavgStop + oldsdStop, linetype="longdash", size = 1.5, alpha = 0.2) +
   theme(axis.title = element_text(size = 40),
         axis.title.x = element_text(margin = margin(t = 20, r = 0, b = 0, l = 0)),
         axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0)),
@@ -342,9 +323,7 @@ p <- ggplot(summarydf, aes(x=variable, y=value, color=Opinion, alpha=interac)) +
   ylab("No. of agents") +
   xlab(title) +
   scale_color_manual(values = c("#990000", "#336600")) +
-  ggtitle("Experiment: CMO and Majority on a Sun Graph") +
-  guides(alpha=FALSE) +
-  scale_alpha_manual(values = c(0.2, 1.0)) +
+  ggtitle("Experiment: CMO and Discussion on a Sun Graph") +
   expand_limits(x = 55, y = 100)
 p
 
