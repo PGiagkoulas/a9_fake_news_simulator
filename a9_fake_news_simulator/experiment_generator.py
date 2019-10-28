@@ -1,4 +1,4 @@
-# tiny script to output experiment files as needed
+# script to generate experiment files
 
 def main():
 	fileCount = 1
