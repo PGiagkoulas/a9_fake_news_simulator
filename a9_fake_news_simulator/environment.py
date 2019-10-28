@@ -14,15 +14,14 @@ class Environment:
     num_agents = None  # number of agents in the network
     num_liars = None  # number of liars (opinion = -1)
     num_experts = None  # number of liars (opinion = 1)
-    num_connections = None  # the connectivity of the network TODO: change to something more elaborate
-    global_clustering_coefficient = "none"  # average of 'the amount of connections of each agent divided by the amount of possible connections for each agent'
+    num_connections = None  # the connectivity of the network
     num_news = None  # number of different news propagating in the network (=1 for now)
-    num_steps = None  # how long the simulation will run TODO: use more elaborate termination criterion
+    num_steps = None  # how long the simulation will run
     agent_list = None  # list of all agents
     connectivity_matrix = None  # keeps all the connections between agents in the network (row [HAS_CONNECTION_WITH] column)
     communication_protocol = None  # determines how agents choose whom to call
     conversation_protocol = None  # determines how a conversation takes place and how agents change their opinion
-    connectivity = None
+    connectivity = None  # determines the initial architecture of the network
     n_isolates = None  # number of isolated agents in the network, after initialization
 
     # initializer
@@ -94,8 +93,7 @@ class Environment:
         if self.connectivity == "circle":
             return self.init_circlegraph(connectivity_matrix)
 
-    ## The different methods for connectivity
-
+    # The different methods for connectivity
     def init_random(self, connectivity_matrix):
         for number in range(self.num_connections):
             # randomly decide connection between 2 agents
@@ -408,27 +406,7 @@ class Environment:
     def distance(self, xy1, xy2):
         return math.sqrt(pow((xy1[0] - xy2[0]), 2) + pow((xy1[1] - xy2[1]), 2))
 
-    # calculate local clustering coefficiant
-    def clustering_coefficient(self):
-        temp_neighbours = []
-        neighbour_connections = 0
-        total_possible_connections = 0
-        for i in range(self.num_agents):
-            for j in range(len(self.connectivity_matrix[i])):
-                if self.connectivity_matrix[i][j] == 1:
-                    # note down the neighbours of agent i
-                    temp_neighbours.append(self.connectivity_matrix[i][j])
-            for n in temp_neighbours:
-                print(n)
-                # for each neighbour, check whether their neighbours are also connected (receivers) of the original agent
-                for nj in range(len(self.connectivity_matrix[n])):
-                    if self.connectivity_matrix[i][nj] == 1:
-                        neighbour_connections += 1
-                # get the total possible connections between the neighbours of agent i
-                total_possible_connections += len(temp_neighbours) - 1
-        # return the coefficient
-        return neighbour_connections / total_possible_connections / self.num_agents
-
+    # evaluates winner of conversation
     def calculate_winner(self, persuasiveness_a, persuasiveness_b):
         # normalize the probabilities
         a = persuasiveness_a / (persuasiveness_a + persuasiveness_b)
@@ -438,6 +416,7 @@ class Environment:
         else:
             return 1
 
+    # checks if simulation has converged (no more opinion propagation possible)
     def converged(self):
         if all([agent.convinced for agent in self.agent_list]):
             return True
@@ -456,6 +435,7 @@ class Environment:
                 isolates += 1
         return isolates
 
+    # checks if there are still valid senders/receivers in the network
     def all_contacted(self):
         # assume all agents have been contacted
         all_contacted = True
@@ -466,11 +446,11 @@ class Environment:
             agent_phonebook = [index for index in range(0, self.num_agents)
                                if (agent_connectivity[index] != 0 and index != agent_index)]
             if self.communication_protocol == 'CO':
-                valid_conntacts = [contact for contact in agent_phonebook if agent.opinion_base[contact] is None]
+                valid_contacts = [contact for contact in agent_phonebook if agent.opinion_base[contact] is None]
             elif self.communication_protocol == 'LNS':
-                valid_conntacts = [contact for contact in agent_phonebook
+                valid_contacts = [contact for contact in agent_phonebook
                                    if agent.opinion_base[contact] is None or agent.opinion_base[contact] == 0]
-            if valid_conntacts:
+            if valid_contacts:
                 all_contacted = False
                 return all_contacted
         return all_contacted
