@@ -33,3 +33,24 @@ To run a simulation go to the a9_fake_news_simulator directory and run:
 ```bat
 python main.py
 ```
+After that follow the instructions. There is a choice between setting the parameters for the simulation by hand, through the command line commands or load an existing experiment set-up from a file.
+
+## Creating an experiment set-up file
+The file should be in a simple .txt format and the layout of the file should be the following:
+* n_agents [value]
+* n_liars [value]
+* n_experts [value]
+* n_connections [value]
+* cluster_distance [value]
+* n_news [value]
+* n_steps [value]
+* connectivity_type [value]
+* communication_protocol [value]
+* conversation_protocol [value]
+* runs [value]
+
+## Reproduce results
+TODO
+
+## Reproduce graphs
+TODO
