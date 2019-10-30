@@ -284,6 +284,7 @@ class MyPrompt(Cmd):
 
     def run_stepwise(self):
         result_dfs = []
+        run_results_df = pd.DataFrame()
         for run in range(1, args['runs'] + 1):
             print("-Run {0}/{1}".format(run, args['runs']))
             network = environment.Environment(args['n_agents'], args['n_liars'], args['n_experts'],
@@ -291,8 +292,11 @@ class MyPrompt(Cmd):
                                               args['n_steps'], args['connectivity_type'],
                                               args['communication_protocol'], args['conversation_protocol'])
             # export results dataframe
-            result_dfs.append(network.run_simulation(stepwise=True))
+            stepwise_result, end_result = network.run_simulation(stepwise=True)
+            result_dfs.append(stepwise_result)
+            run_results_df = pd.concat([run_results_df, end_result])
         io_utils.export_results(result_dfs)
+        io_utils.export_results([run_results_df])
 
 
 if __name__ == "__main__":

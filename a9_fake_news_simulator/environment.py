@@ -386,7 +386,7 @@ class Environment:
         run_results_df = pd.DataFrame()
         # to decrease the number of lines in the csvs we count only the steps in which agents actually communicated
         successful_steps = 1
-        for step in tqdm(range(1, self.num_steps + 1)):
+        for step in range(1, self.num_steps + 1):
             if self.converged():
                 final_step = successful_steps
                 break
@@ -400,7 +400,7 @@ class Environment:
                     # only concat new line to dataframe if a conversation took place
                     run_results_df = pd.concat([run_results_df, self.output_measures(successful_steps)])
         if stepwise:
-            return run_results_df
+            return run_results_df, self.output_measures(step=final_step)
         else:
             return self.output_measures(step=final_step)
 
