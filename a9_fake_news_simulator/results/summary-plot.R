@@ -104,19 +104,30 @@ for (folder in folderNames) {
 }
 
 colnames(convDf) <- c("meanVal", "sdVal", "protComb")
-convDf$metric <- "convergence"
+convDf$Metric <- "Convergence"
 colnames(consenDf) <- c("meanVal", "sdVal", "protComb")
-consenDf$metric <- "consensus"
+consenDf$Metric <- "Consensus"
 
 allDf <- rbind(convDf, consenDf)
 
-p <- ggplot(allDf, aes(x=protComb, y=meanVal, color=metric)) + 
+allDf$meanVal <- allDf$meanVal / 10
+
+title = expression(paste("Time step / 10\U00B2", sep = ""))
+
+p <- ggplot(allDf, aes(x=protComb, y=meanVal, group=Metric, color=Metric)) + 
   geom_errorbar(aes(ymin=meanVal-sdVal, ymax=meanVal+sdVal), width=.2) +
   geom_line() +
-  geom_point() +
-  ylab("Timesteps") +
+  geom_point(size = 2) +
+  ylab(title) +
   xlab("Protocol Combination") +
-  ggtitle("Avg convergence point with sd") +
   theme(plot.title = element_text(hjust = 0.5),
-        axis.text.x = element_text(angle = 90, hjust = 1))
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+        legend.position = c(0.1,0.8),
+        axis.title = element_text(size = 23),
+        axis.text = element_text(size = 18),
+        legend.title = element_text(size = 17),
+        legend.text = element_text(size = 15),
+        axis.title.x = element_text(margin = margin(t = 10)),
+        axis.title.y = element_text(margin = margin(r = 10))) +
+  scale_y_continuous(breaks = round(seq(0, 5500, by = 250)))
 p
