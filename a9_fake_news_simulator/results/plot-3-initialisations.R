@@ -94,7 +94,7 @@ do_stuff <- function(wdName, protocolName) {
 
 ############## Distribution 1 ####################
 
-returned_things <- do_stuff("C:/Users/Anton Laukemper/Desktop/Uni/WS1920/Multi-Agent System Modeling/dmas/a9_fake_news_simulator/results/data/ANY_CLUSTER_SIMPLE", "DISCUSSION")
+returned_things <- do_stuff("C:/Users/Anton Laukemper/Desktop/Uni/WS1920/Multi-Agent System Modeling/dmas/a9_fake_news_simulator/results/data/ANY_CLUSTER_SIMPLE", "CLUSTER")
 avgStopDis1 <- returned_things[1]
 sdStopDis1 <- returned_things[2]
 meltDis1 <- returned_things[3]
@@ -105,7 +105,7 @@ meltDis1 <- data.frame(meltDis1)
 
 ############## Distribution 2 ####################
 
-returned_things <- do_stuff("C:/Users/Anton Laukemper/Desktop/Uni/WS1920/Multi-Agent System Modeling/dmas/a9_fake_news_simulator/results/data/ANY_RANDOM_SIMPLE", "MAJORITY OPINION")
+returned_things <- do_stuff("C:/Users/Anton Laukemper/Desktop/Uni/WS1920/Multi-Agent System Modeling/dmas/a9_fake_news_simulator/results/data/ANY_RANDOM_SIMPLE", "RANDOM")
 
 avgStopDis2 <- returned_things[1]
 sdStopDis2 <- returned_things[2]
@@ -117,7 +117,7 @@ meltDis2 <- data.frame(meltDis2)
 
 ############## Distribution 3 ####################
 
-returned_things <- do_stuff("C:/Users/Anton Laukemper/Desktop/Uni/WS1920/Multi-Agent System Modeling/dmas/a9_fake_news_simulator/results/data/ANY_SUN_SIMPLE", "SIMPLE")
+returned_things <- do_stuff("C:/Users/Anton Laukemper/Desktop/Uni/WS1920/Multi-Agent System Modeling/dmas/a9_fake_news_simulator/results/data/ANY_SUN_SIMPLE", "SUN")
 
 avgStopDis3 <- returned_things[1]
 sdStopDis3 <- returned_things[2]
