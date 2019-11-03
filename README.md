@@ -49,8 +49,3 @@ The file should be in a simple .txt format and the layout of the file should be 
 * conversation_protocol [value]
 * runs [value]
 
-## Reproduce results
-TODO
-
-## Reproduce graphs
-TODO
